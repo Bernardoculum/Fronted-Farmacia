@@ -1,0 +1,79 @@
+{
+    "$schema":  "./node_modules/@angular/cli/lib/config/schema.json",
+    "version":  1,
+    "cli":  {
+                "packageManager": "npm",
+                "analytics": "1d685448-0da7-40c3-b5d9-040399a11efa"
+            },
+    "newProjectRoot":  "projects",
+    "projects":  {
+                     "fronted-farmacia":  {
+                                              "projectType":  "application",
+                                              "schematics":  {
+                                                                 "@schematics/angular:component":  {
+                                                                                                       "style":  "scss"
+                                                                                                   }
+                                                             },
+                                              "root":  "",
+                                              "sourceRoot":  "src",
+                                              "prefix":  "app",
+                                              "architect":  {
+                                                                "build":  {
+                                                                              "builder":  "@angular/build:application",
+                                                                              "options":  {
+                                                                                              "browser":  "src/main.ts",
+                                                                                              "tsConfig":  "tsconfig.app.json",
+                                                                                              "inlineStyleLanguage":  "scss",
+                                                                                              "assets":  [
+                                                                                                             {
+                                                                                                                 "glob":  "**/*",
+                                                                                                                 "input":  "public"
+                                                                                                             }
+                                                                                                         ],
+                                                                                              "styles":  [
+                                                                                                             "src/styles.scss"
+                                                                                                         ]
+                                                                                          },
+                                                                              "configurations":  {
+                                                                                                     "production":  {
+                                                                                                                        "budgets":  [
+                                                                                                                                        {
+                                                                                                                                            "type":  "initial",
+                                                                                                                                            "maximumWarning":  "2mb",
+                                                                                                                                            "maximumError":  "5mb"
+                                                                                                                                        },
+                                                                                                                                        {
+                                                                                                                                            "type":  "anyComponentStyle",
+                                                                                                                                            "maximumWarning":  "4kB",
+                                                                                                                                            "maximumError":  "8kB"
+                                                                                                                                        }
+                                                                                                                                    ],
+                                                                                                                        "outputHashing":  "all"
+                                                                                                                    },
+                                                                                                     "development":  {
+                                                                                                                         "optimization":  false,
+                                                                                                                         "extractLicenses":  false,
+                                                                                                                         "sourceMap":  true
+                                                                                                                     }
+                                                                                                 },
+                                                                              "defaultConfiguration":  "production"
+                                                                          },
+                                                                "serve":  {
+                                                                              "builder":  "@angular/build:dev-server",
+                                                                              "configurations":  {
+                                                                                                     "production":  {
+                                                                                                                        "buildTarget":  "fronted-farmacia:build:production"
+                                                                                                                    },
+                                                                                                     "development":  {
+                                                                                                                         "buildTarget":  "fronted-farmacia:build:development"
+                                                                                                                     }
+                                                                                                 },
+                                                                              "defaultConfiguration":  "development"
+                                                                          },
+                                                                "test":  {
+                                                                             "builder":  "@angular/build:unit-test"
+                                                                         }
+                                                            }
+                                          }
+                 }
+}
