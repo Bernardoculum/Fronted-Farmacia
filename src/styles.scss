@@ -1,0 +1,84 @@
+@use '@angular/material' as mat;
+@import "tailwindcss";
+
+html {
+  height: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  box-sizing: border-box;
+
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+body {
+  color-scheme: light;
+  background-color: #f8fafc;
+  color: #1e293b;
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+  min-height: 100%;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Scrollbar moderno, delgado y estilizado */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Optimizaciones responsivas para Angular Material */
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+.mat-mdc-text-field-wrapper {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Evitar auto-zoom en iOS Safari en campos de texto */
+@media screen and (max-width: 768px) {
+  input.mat-mdc-input-element {
+    font-size: 16px !important;
+  }
+}
+
+/* Safe areas para dispositivos móviles con notch o barras de gestos */
+.safe-top {
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
