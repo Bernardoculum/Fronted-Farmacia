@@ -1,0 +1,195 @@
+<div class="login-wrapper min-h-screen w-full flex items-center justify-center p-3.5 sm:p-6 md:p-8 relative overflow-hidden">
+  
+  <!-- Círculos decorativos de fondo con desenfoque (Glassmorphism effect) -->
+  <div class="decorative-blob absolute -top-12 -left-12 sm:-top-24 sm:-left-24 w-60 h-60 sm:w-96 sm:h-96 max-w-[70vw] max-h-[70vw] bg-teal-400/25 rounded-full blur-2xl sm:blur-3xl pointer-events-none"></div>
+  <div class="decorative-blob absolute -bottom-12 -right-12 sm:-bottom-24 sm:-right-24 w-60 h-60 sm:w-96 sm:h-96 max-w-[70vw] max-h-[70vw] bg-indigo-500/20 rounded-full blur-2xl sm:blur-3xl pointer-events-none"></div>
+
+  <!-- Tarjeta de Login Principal Adaptable -->
+  <div class="login-card w-full max-w-sm sm:max-w-lg bg-white/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-5 sm:p-8 md:p-9 border border-white/60 relative z-10 transition-all">
+    
+    <!-- Encabezado / Logo Farmacia -->
+    <header class="text-center mb-6 sm:mb-8">
+      <div class="inline-flex items-center justify-center w-14 h-14 sm:w-18 sm:h-18 bg-gradient-to-tr from-teal-600 to-emerald-500 text-white rounded-2xl shadow-lg shadow-teal-500/25 mb-3 sm:mb-4 transform hover:scale-105 active:scale-95 transition-transform duration-300">
+        <mat-icon class="!w-8 !h-8 sm:!w-10 sm:!h-10 text-3xl sm:text-4xl flex items-center justify-center">local_pharmacy</mat-icon>
+      </div>
+      <h1 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">FARMACIA PLUS</h1>
+      <p class="text-xs sm:text-sm font-medium text-slate-500 mt-1">Portal de Acceso y Gestión de Inventarios</p>
+    </header>
+
+    <!-- Mensaje de Error Alerta Responsivo -->
+    @if (errorMessage()) {
+      <div class="mb-5 p-3.5 sm:p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 sm:gap-3 text-rose-700 animate-fade-in shadow-sm">
+        <mat-icon class="text-rose-500 shrink-0 text-xl mt-0.5">error_outline</mat-icon>
+        <span class="text-xs sm:text-sm font-semibold leading-snug">{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <!-- Formulario Reactivo -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-3.5 sm:space-y-4.5">
+      
+      <!-- Input Usuario -->
+      <div class="space-y-1">
+        <label class="block text-2xs sm:text-xs font-bold text-slate-600 uppercase tracking-wider">Usuario</label>
+        <mat-form-field appearance="outline" class="w-full custom-field">
+          <mat-icon matPrefix class="text-slate-400 mr-2 text-xl">person_outline</mat-icon>
+          <input
+            matInput
+            formControlName="username"
+            placeholder="Ingresa tu usuario"
+            autocomplete="username"
+          />
+          @if (loginForm.get('username')?.hasError('required') && loginForm.get('username')?.touched) {
+            <mat-error class="text-xs">El usuario es obligatorio</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Input Contraseña -->
+      <div class="space-y-1">
+        <label class="block text-2xs sm:text-xs font-bold text-slate-600 uppercase tracking-wider">Contraseña</label>
+        <mat-form-field appearance="outline" class="w-full custom-field">
+          <mat-icon matPrefix class="text-slate-400 mr-2 text-xl">lock_outline</mat-icon>
+          <input
+            matInput
+            [type]="hidePassword() ? 'password' : 'text'"
+            formControlName="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            mat-icon-button
+            matSuffix
+            (click)="togglePasswordVisibility()"
+            class="text-slate-400 hover:text-slate-600"
+            aria-label="Mostrar u ocultar contraseña"
+          >
+            <mat-icon class="text-xl">{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched) {
+            <mat-error class="text-xs">La contraseña es obligatoria</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Botón de Inicio de Sesión Responsivo -->
+      <button
+        type="submit"
+        [disabled]="loginForm.invalid || isLoading()"
+        class="submit-btn w-full py-3 sm:py-3.5 px-4 sm:px-6 rounded-xl font-bold text-white shadow-lg transition-all duration-300 flex items-center justify-center gap-2 mt-4 sm:mt-6 cursor-pointer text-sm sm:text-base min-h-[46px]"
+      >
+        @if (isLoading()) {
+          <mat-spinner diameter="20" class="text-white"></mat-spinner>
+          <span>Validando credenciales...</span>
+        } @else {
+          <span>Iniciar Sesión</span>
+          <mat-icon class="text-lg sm:text-xl">arrow_forward</mat-icon>
+        }
+      </button>
+    </form>
+
+    <!-- Accesos Rápidos de Prueba (Grilla responsiva 1-2-3 columnas) -->
+    <section class="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-slate-100">
+      <div class="flex items-center justify-center gap-1.5 text-center mb-3">
+        <mat-icon class="text-amber-500 text-sm sm:text-base">bolt</mat-icon>
+        <h2 class="text-2xs sm:text-xs font-bold text-slate-400 uppercase tracking-wider">
+          Cuentas de la BD para Pruebas Rápidas
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        
+        <!-- Superadmin: Culum -->
+        <button
+          type="button"
+          (click)="fillCredentials('Culum', 'Culum2026')"
+          class="role-chip bg-indigo-50/90 hover:bg-indigo-100 text-indigo-800 border-indigo-200"
+          title="Superadmin Culum"
+        >
+          <mat-icon class="chip-icon text-indigo-600">shield</mat-icon>
+          <div class="chip-text">
+            <span class="chip-role">Superadmin</span>
+            <span class="chip-name">Culum</span>
+          </div>
+        </button>
+
+        <!-- Superadmin: Ana Martínez -->
+        <button
+          type="button"
+          (click)="fillCredentials('amartinez', 'azerty')"
+          class="role-chip bg-violet-50/90 hover:bg-violet-100 text-violet-800 border-violet-200"
+          title="Superadmin Ana Martínez"
+        >
+          <mat-icon class="chip-icon text-violet-600">admin_panel_settings</mat-icon>
+          <div class="chip-text">
+            <span class="chip-role">Superadmin</span>
+            <span class="chip-name">amartinez</span>
+          </div>
+        </button>
+
+        <!-- Gerente: Carlos García -->
+        <button
+          type="button"
+          (click)="fillCredentials('cgarcia', 'admin123')"
+          class="role-chip bg-sky-50/90 hover:bg-sky-100 text-sky-800 border-sky-200"
+          title="Gerente Carlos García"
+        >
+          <mat-icon class="chip-icon text-sky-600">business</mat-icon>
+          <div class="chip-text">
+            <span class="chip-role">Gerente</span>
+            <span class="chip-name">cgarcia</span>
+          </div>
+        </button>
+
+        <!-- Cajero: Luis Hernández -->
+        <button
+          type="button"
+          (click)="fillCredentials('lhernandez', 'admin123')"
+          class="role-chip bg-emerald-50/90 hover:bg-emerald-100 text-emerald-800 border-emerald-200"
+          title="Cajero Luis Hernández"
+        >
+          <mat-icon class="chip-icon text-emerald-600">point_of_sale</mat-icon>
+          <div class="chip-text">
+            <span class="chip-role">Cajero</span>
+            <span class="chip-name">lhernandez</span>
+          </div>
+        </button>
+
+        <!-- Call Center: Sofía López -->
+        <button
+          type="button"
+          (click)="fillCredentials('slopez', 'admin123')"
+          class="role-chip bg-teal-50/90 hover:bg-teal-100 text-teal-800 border-teal-200"
+          title="Call Center Sofía López"
+        >
+          <mat-icon class="chip-icon text-teal-600">support_agent</mat-icon>
+          <div class="chip-text">
+            <span class="chip-role">Call Center</span>
+            <span class="chip-name">slopez</span>
+          </div>
+        </button>
+
+        <!-- Cajero: Pedro Morales -->
+        <button
+          type="button"
+          (click)="fillCredentials('pmorales', 'admin123')"
+          class="role-chip bg-amber-50/90 hover:bg-amber-100 text-amber-800 border-amber-200"
+          title="Cajero Pedro Morales"
+        >
+          <mat-icon class="chip-icon text-amber-600">payments</mat-icon>
+          <div class="chip-text">
+            <span class="chip-role">Cajero</span>
+            <span class="chip-name">pmorales</span>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <!-- Indicador de Estado del Backend Responsivo -->
+    <footer class="mt-5 sm:mt-6 pt-2 flex items-center justify-center gap-2 text-slate-400 text-2xs sm:text-xs">
+      <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span class="truncate"> Backend (Puerto 3000)</span>
+    </footer>
+
+  </div>
+</div>

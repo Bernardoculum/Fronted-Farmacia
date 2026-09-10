@@ -1,0 +1,113 @@
+.login-wrapper {
+  background: radial-gradient(circle at 10% 20%, rgba(204, 251, 241, 0.45) 0%, rgba(238, 242, 255, 0.65) 90%),
+              linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.login-card {
+  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.12),
+              0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #0d9488 0%, #059669 100%);
+  box-shadow: 0 10px 20px -5px rgba(13, 148, 136, 0.35);
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0f766e 0%, #047857 100%);
+    box-shadow: 0 14px 24px -5px rgba(13, 148, 136, 0.45);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 6px 12px -3px rgba(13, 148, 136, 0.4);
+  }
+
+  &:disabled {
+    background: #cbd5e1;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+}
+
+/* Estilo responsivo y táctil para los botones de rol rápido */
+.role-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.75rem;
+  border-width: 1px;
+  border-style: solid;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  min-height: 44px; /* Recomendación táctil WCAG / Mobile */
+  text-align: left;
+  user-select: none;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  .chip-icon {
+    font-size: 1.125rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    flex-shrink: 0;
+  }
+
+  .chip-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.15;
+
+    .chip-role {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      opacity: 0.8;
+      font-weight: 700;
+    }
+
+    .chip-name {
+      font-size: 0.75rem;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+.custom-field {
+  ::ng-deep {
+    .mat-mdc-text-field-wrapper {
+      background-color: #f8fafc !important;
+      border-radius: 0.75rem;
+    }
+    .mat-mdc-form-field-subscript-wrapper {
+      margin-top: 2px;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}

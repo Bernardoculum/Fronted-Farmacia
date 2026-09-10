@@ -1,0 +1,156 @@
+<div class="min-h-screen bg-slate-100/70 flex flex-col">
+  
+  <!-- Barra de Navegación Superior Persistente -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between shadow-xs">
+    
+    <!-- Identidad y Menú de Enlaces -->
+    <div class="flex items-center gap-3 sm:gap-6">
+      <div class="flex items-center gap-2.5 sm:gap-3">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-tr from-teal-600 to-emerald-500 text-white rounded-xl flex items-center justify-center shadow-md shadow-teal-500/20 shrink-0">
+          <mat-icon class="text-xl sm:text-2xl flex items-center justify-center">local_pharmacy</mat-icon>
+        </div>
+        <div class="leading-tight hidden xs:block">
+          <h1 class="text-sm sm:text-base font-black text-slate-800 tracking-tight">FARMACIA PLUS</h1>
+          <span class="text-2xs text-slate-400 font-medium">Sistema Integral de Farmacia</span>
+        </div>
+      </div>
+
+      <!-- Enlaces Globales de Navegación con RBAC y Active Route -->
+      <nav class="flex items-center gap-1 sm:gap-2">
+        <a 
+          routerLink="/dashboard" 
+          routerLinkActive="bg-teal-50 text-teal-700 font-bold border-teal-200 shadow-xs" 
+          class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent transition-all flex items-center gap-1.5">
+          <mat-icon class="text-base sm:text-lg flex items-center justify-center">dashboard</mat-icon>
+          <span class="hidden md:inline">Dashboard</span>
+        </a>
+        
+        <a 
+          routerLink="/productos" 
+          routerLinkActive="bg-teal-50 text-teal-700 font-bold border-teal-200 shadow-xs" 
+          class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent transition-all flex items-center gap-1.5">
+          <mat-icon class="text-base sm:text-lg flex items-center justify-center">medication</mat-icon>
+          <span class="hidden md:inline">Medicamentos</span>
+        </a>
+
+        @if (authService.canViewLotes()) {
+          <a 
+            routerLink="/lotes" 
+            routerLinkActive="bg-teal-50 text-teal-700 font-bold border-teal-200 shadow-xs" 
+            class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent transition-all flex items-center gap-1.5">
+            <mat-icon class="text-base sm:text-lg flex items-center justify-center">inventory_2</mat-icon>
+            <span class="hidden md:inline">Lotes & Caducidad</span>
+          </a>
+        }
+
+        @if (authService.canAccessPOS() || authService.canAccessCallCenter() || authService.canAccessWebOrders()) {
+          <a 
+            routerLink="/pedidos" 
+            routerLinkActive="bg-teal-50 text-teal-700 font-bold border-teal-200 shadow-xs" 
+            class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent transition-all flex items-center gap-1.5">
+            <mat-icon class="text-base sm:text-lg flex items-center justify-center">point_of_sale</mat-icon>
+            <span>Ventas & Pedidos</span>
+          </a>
+        }
+      </nav>
+    </div>
+
+    <!-- Botón Interactivo de Perfil de Usuario con Popover / Dropdown -->
+    <div>
+      <button 
+        type="button"
+        [matMenuTriggerFor]="profileMenu" 
+        class="flex items-center gap-2.5 sm:gap-3 py-1 px-1.5 sm:px-2.5 rounded-2xl border border-slate-200 hover:border-teal-400 hover:bg-teal-50/40 transition-all cursor-pointer shadow-2xs group focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+        matTooltip="Ver detalles de mi cuenta">
+        
+        <!-- Avatar Circular con Iniciales -->
+        <div class="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-xl bg-gradient-to-tr from-teal-600 to-teal-500 text-white flex items-center justify-center font-black text-2xs sm:text-xs shadow-xs group-hover:scale-105 transition-transform">
+          {{ getUserInitials() }}
+        </div>
+
+        <!-- Nombre y Badge de Rol Estandarizado -->
+        <div class="hidden sm:flex flex-col text-left">
+          <span class="text-xs font-black text-slate-800 leading-tight">
+            {{ getUserDisplayName() }}
+          </span>
+          <span class="text-3xs font-bold text-teal-700 tracking-wider">
+            {{ getFriendlyRoleName() }}
+          </span>
+        </div>
+
+        <!-- Icono Desplegable -->
+        <mat-icon class="text-slate-400 group-hover:text-teal-600 transition-colors text-base !w-4 !h-4 flex items-center justify-center">
+          expand_more
+        </mat-icon>
+      </button>
+
+      <!-- Menú Flotante / Popover de Perfil (Auto-cierre al hacer click fuera) -->
+      <mat-menu #profileMenu="matMenu" xPosition="before" class="!rounded-2xl !p-0 shadow-2xl border border-slate-200 overflow-hidden">
+        <div class="w-72 p-4 space-y-3" (click)="$event.stopPropagation()">
+          
+          <!-- Encabezado de la Tarjeta con Avatar Grande -->
+          <div class="flex items-center gap-3 border-b border-slate-100 pb-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 text-white flex items-center justify-center font-black text-base shadow-sm shrink-0">
+              {{ getUserInitials() }}
+            </div>
+            <div class="min-w-0">
+              <div class="text-base font-black text-slate-800 truncate">
+                {{ getUserDisplayName() }}
+              </div>
+              <div class="text-2xs font-bold text-teal-700 uppercase tracking-wider">
+                {{ getFriendlyRoleName() }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Datos de la Sesión Actual -->
+          <div class="space-y-2 text-xs">
+            
+            <!-- Rol Oficial -->
+            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+              <span class="text-slate-400 font-semibold text-2xs uppercase">Rol</span>
+              <span [ngClass]="getRoleBadgeClass()" class="text-2xs font-extrabold px-2 py-0.5 rounded-md border tracking-wider">
+                {{ getFriendlyRoleName() }}
+              </span>
+            </div>
+
+            <!-- Sucursal Asignada -->
+            <div class="p-2 rounded-xl bg-slate-50 border border-slate-100">
+              <div class="text-slate-400 font-semibold text-2xs uppercase mb-0.5">Sucursal</div>
+              <div class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <mat-icon class="text-teal-600 text-sm !w-4 !h-4 flex items-center justify-center">store</mat-icon>
+                <span class="truncate">{{ getUserSucursal() }}</span>
+              </div>
+            </div>
+
+            <!-- Estado de Conexión -->
+            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+              <span class="text-slate-400 font-semibold text-2xs uppercase">Usuario</span>
+              <span class="font-mono text-2xs font-bold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+                @{{ authService.currentUser()?.username || 'usuario' }}
+              </span>
+            </div>
+
+          </div>
+
+          <!-- Botón de Acción: Cerrar Sesión -->
+          <div class="pt-2 border-t border-slate-100">
+            <button 
+              type="button"
+              (click)="authService.logout()" 
+              class="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs transition-colors cursor-pointer border border-rose-200/80 shadow-2xs">
+              <mat-icon class="text-base text-rose-600 !w-4 !h-4 flex items-center justify-center">logout</mat-icon>
+              <span>Cerrar Sesión</span>
+            </button>
+          </div>
+
+        </div>
+      </mat-menu>
+
+    </div>
+
+  </header>
+
+  <!-- Router Outlet de Vistas Hijas -->
+  <router-outlet></router-outlet>
+</div>
