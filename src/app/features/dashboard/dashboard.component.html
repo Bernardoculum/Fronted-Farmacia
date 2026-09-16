@@ -1,0 +1,174 @@
+<main class="flex-1 w-full max-w-7xl mx-auto p-3.5 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+  
+  <!-- Banner de Bienvenida Dinámico y Elegante -->
+  <section class="banner-card bg-gradient-to-r from-teal-800 via-teal-700 to-emerald-700 rounded-2xl sm:rounded-3xl p-5 sm:p-7 md:p-8 text-white shadow-lg sm:shadow-xl relative overflow-hidden flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 sm:gap-6">
+    
+    <!-- Destellos decorativos sutiles de fondo -->
+    <div class="absolute -right-16 -top-16 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+    
+    <div class="relative z-10 max-w-2xl">
+      <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight">
+        ¡Bienvenido, {{ user()?.username }}!
+      </h2>
+      
+      <p class="text-teal-100 text-xs sm:text-sm mt-2 leading-relaxed">
+        Has ingresado exitosamente al sistema como 
+        <span class="font-bold text-white bg-teal-900/40 px-2 py-0.5 rounded text-2xs uppercase tracking-wider">
+          {{ getFriendlyRoleName() }}
+        </span> en 
+        <strong class="text-white">{{ user()?.sucursal || 'Sucursal Zona 10 Centro' }}</strong>.
+      </p>
+    </div>
+
+    <!-- Indicador Limpio de Estado -->
+    <div class="relative z-10 hidden sm:flex items-center gap-2.5 bg-white/15 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 shadow-xs">
+      <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></div>
+      <span class="text-xs font-bold text-white tracking-wide">Sistema Operativo</span>
+    </div>
+
+  </section>
+
+  <!-- Grilla de Información de la Cuenta (1 col móvil, 2 tablet, 4 desktop) -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    
+    <!-- Card Usuario -->
+    <div class="info-card bg-white p-4 sm:p-5 rounded-xl sm:rounded-2xl shadow-xs border border-slate-200/90 flex items-center gap-3 sm:gap-4 hover:shadow-md transition-shadow">
+      <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+        <mat-icon class="text-xl sm:text-2xl">account_circle</mat-icon>
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="text-2xs sm:text-xs text-slate-400 font-bold uppercase tracking-wider">Usuario</div>
+        <div class="text-sm sm:text-base font-extrabold text-slate-800 truncate">{{ user()?.username }}</div>
+      </div>
+    </div>
+
+    <!-- Card Rol de Acceso -->
+    <div class="info-card bg-white p-4 sm:p-5 rounded-xl sm:rounded-2xl shadow-xs border border-slate-200/90 flex items-center gap-3 sm:gap-4 hover:shadow-md transition-shadow">
+      <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+        <mat-icon class="text-xl sm:text-2xl">shield</mat-icon>
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="text-2xs sm:text-xs text-slate-400 font-bold uppercase tracking-wider">Rol de Acceso</div>
+        <div class="text-sm sm:text-base font-extrabold text-purple-700 truncate">{{ getFriendlyRoleName() }}</div>
+      </div>
+    </div>
+
+    <!-- Card Sucursal -->
+    <div class="info-card bg-white p-4 sm:p-5 rounded-xl sm:rounded-2xl shadow-xs border border-slate-200/90 flex items-center gap-3 sm:gap-4 hover:shadow-md transition-shadow">
+      <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+        <mat-icon class="text-xl sm:text-2xl">store</mat-icon>
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="text-2xs sm:text-xs text-slate-400 font-bold uppercase tracking-wider">Sucursal</div>
+        <div class="text-sm sm:text-base font-extrabold text-slate-800 truncate" [title]="user()?.sucursal || 'Central'">
+          {{ user()?.sucursal || 'Central' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Card Empleado ID -->
+    <div class="info-card bg-white p-4 sm:p-5 rounded-xl sm:rounded-2xl shadow-xs border border-slate-200/90 flex items-center gap-3 sm:gap-4 hover:shadow-md transition-shadow">
+      <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+        <mat-icon class="text-xl sm:text-2xl">badge</mat-icon>
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="text-2xs sm:text-xs text-slate-400 font-bold uppercase tracking-wider">Empleado ID</div>
+        <div class="text-sm sm:text-base font-extrabold text-slate-800">#{{ user()?.empleadoId || 'N/A' }}</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Accesos Directos a Módulos (Grilla responsiva 1-2-3 columnas) -->
+  <section class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 shadow-xs border border-slate-200/90">
+    
+    <div class="mb-4 sm:mb-5">
+      <h3 class="text-base sm:text-lg font-bold text-slate-800">Módulos del Sistema Disponibles</h3>
+      <p class="text-xs text-slate-400 mt-0.5">Funcionalidades adaptadas según tu perfil de seguridad</p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4.5">
+      
+      <!-- Tarjeta Productos y Kardex (Activo / Listo) -->
+      <a
+        routerLink="/productos"
+        class="module-card p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-teal-300 bg-gradient-to-b from-teal-50/50 to-white hover:border-teal-500 hover:shadow-md transition-all duration-200 group cursor-pointer flex flex-col justify-between block no-underline text-inherit"
+      >
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center mb-3 group-hover:scale-105 transition-transform shadow-xs shadow-teal-600/30">
+            <mat-icon>inventory_2</mat-icon>
+          </div>
+          <h4 class="font-bold text-sm sm:text-base text-slate-800 group-hover:text-teal-700 transition-colors">
+            Productos & Kardex
+          </h4>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            Catálogo de medicamentos, lotes, fechas de caducidad, movimientos de entrada/salida y saldos atómicos.
+          </p>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-teal-100 flex items-center justify-between text-xs font-bold text-teal-700">
+          <span class="flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Acceder al Módulo</span>
+          </span>
+          <mat-icon class="text-base group-hover:translate-x-1 transition-transform">arrow_forward</mat-icon>
+        </div>
+      </a>
+
+      <!-- Tarjeta Ventas POS & Call Center (Activo y Enlazado) -->
+      <a
+        routerLink="/pedidos"
+        class="module-card p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-purple-300 bg-gradient-to-b from-purple-50/50 to-white hover:border-purple-500 hover:shadow-md transition-all duration-200 group cursor-pointer flex flex-col justify-between block no-underline text-inherit"
+      >
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center mb-3 group-hover:scale-105 transition-transform shadow-xs shadow-purple-600/30">
+            <mat-icon>point_of_sale</mat-icon>
+          </div>
+          <h4 class="font-bold text-sm sm:text-base text-slate-800 group-hover:text-purple-700 transition-colors">
+            Ventas POS & Call Center
+          </h4>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            Venta rápida en mostrador con cambio en efectivo, despacho a domicilio por Call Center y regla FEFO.
+          </p>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-purple-100 flex items-center justify-between text-xs font-bold text-purple-600">
+          <span class="flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+            <span>Acceder al Punto de Venta</span>
+          </span>
+          <mat-icon class="text-base group-hover:translate-x-1 transition-transform">arrow_forward</mat-icon>
+        </div>
+      </a>
+
+      <!-- Tarjeta Control de Lotes & Caducidad (Activo y Enlazado) -->
+      <a
+        routerLink="/lotes"
+        class="module-card p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-amber-300 bg-gradient-to-b from-amber-50/50 to-white hover:border-amber-500 hover:shadow-md transition-all duration-200 group cursor-pointer flex flex-col justify-between block no-underline text-inherit"
+      >
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center mb-3 group-hover:scale-105 transition-transform shadow-xs shadow-amber-600/30">
+            <mat-icon>event_repeat</mat-icon>
+          </div>
+          <h4 class="font-bold text-sm sm:text-base text-slate-800 group-hover:text-amber-700 transition-colors">
+            Control de Lotes & Caducidad
+          </h4>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            Semáforo de vencimientos, días restantes, alertas de merma y asignación prioritaria por regla FEFO.
+          </p>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-amber-100 flex items-center justify-between text-xs font-bold text-amber-600">
+          <span class="flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span>Ver Semáforo de Lotes</span>
+          </span>
+          <mat-icon class="text-base group-hover:translate-x-1 transition-transform">arrow_forward</mat-icon>
+        </div>
+      </a>
+
+    </div>
+
+  </section>
+
+</main>
