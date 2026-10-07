@@ -67,7 +67,7 @@ import { KardexResponse, ProductoListItem } from '../../../core/models/producto.
             class="text-xs font-bold bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="">Todas las Sucursales</option>
-            <option value="1">Sucursal Zona 10 Centro</option>
+            <option value="1">Sucursal Central (Atanasio Tzul Z.12)</option>
             <option value="2">Stand Gasolinera Mixco Norte</option>
             <option value="3">Sucursal Antigua Calzada</option>
             <option value="4">Sucursal Xela Los Altos</option>

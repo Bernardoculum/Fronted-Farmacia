@@ -1,1 +1,21 @@
-:host { display: block; }
+﻿:host {
+  display: block;
+}
+
+aside {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 4px;
+  }
+}

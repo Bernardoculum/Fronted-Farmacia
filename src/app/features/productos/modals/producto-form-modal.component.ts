@@ -12,7 +12,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProductosService } from '../../../core/services/productos.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { ProductoListItem, CreateProductoDto } from '../../../core/models/producto.models';
+import { CustomValidators } from '../../../shared/validators/custom-validators';
+import { OnlyNumbersDirective } from '../../../shared/directives/only-numbers.directive';
 
 @Component({
   selector: 'app-producto-form-modal',
@@ -30,6 +33,7 @@ import { ProductoListItem, CreateProductoDto } from '../../../core/models/produc
     MatProgressSpinnerModule,
     MatAutocompleteModule,
     MatTooltipModule,
+    OnlyNumbersDirective,
   ],
   template: `
     <div class="p-4 sm:p-6 max-w-2xl w-full">
@@ -91,6 +95,9 @@ import { ProductoListItem, CreateProductoDto } from '../../../core/models/produc
               <input matInput formControlName="nombre" placeholder="Ej. Panadol, Amoxicilina, Aspirina..." />
               @if (form.get('nombre')?.hasError('required') && form.get('nombre')?.touched) {
                 <mat-error class="text-2xs">El nombre comercial es obligatorio</mat-error>
+              }
+              @if ((form.get('nombre')?.hasError('requiereLetras') || form.get('nombre')?.hasError('soloNumeros')) && form.get('nombre')?.touched) {
+                <mat-error class="text-2xs">El nombre debe contener letras y no puede ser solo números (ej. '323')</mat-error>
               }
             </mat-form-field>
           </div>
@@ -200,12 +207,12 @@ import { ProductoListItem, CreateProductoDto } from '../../../core/models/produc
           <div>
             <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">Precio de Venta (Q) *</label>
             <mat-form-field appearance="outline" class="w-full">
-              <input matInput type="number" min="0.01" step="0.01" formControlName="precioVenta" placeholder="0.00" />
+              <input matInput type="text" formControlName="precioVenta" appOnlyNumbers [allowDecimals]="true" placeholder="0.00" />
               @if (form.get('precioVenta')?.hasError('required') && form.get('precioVenta')?.touched) {
                 <mat-error class="text-2xs">El precio es obligatorio</mat-error>
               }
-              @if (form.get('precioVenta')?.hasError('min')) {
-                <mat-error class="text-2xs">El precio debe ser mayor a Q 0.00</mat-error>
+              @if ((form.get('precioVenta')?.hasError('min') || form.get('precioVenta')?.hasError('montoInvalido')) && form.get('precioVenta')?.touched) {
+                <mat-error class="text-2xs">El precio debe ser un número positivo mayor a Q 0.00</mat-error>
               }
             </mat-form-field>
           </div>
@@ -250,6 +257,7 @@ export class ProductoFormModalComponent {
   readonly data = inject<ProductoListItem | null>(MAT_DIALOG_DATA);
   private readonly fb = inject(FormBuilder);
   private readonly productosService = inject(ProductosService);
+  private readonly notification = inject(NotificationService);
 
   readonly isEdit = !!this.data?.productoId;
   readonly saving = signal(false);
@@ -310,14 +318,14 @@ export class ProductoFormModalComponent {
       this.data?.codigoProducto || this.generarCodigoSugerido(),
       [Validators.required, Validators.maxLength(50)],
     ],
-    nombre: [this.data?.nombre || '', [Validators.required, Validators.maxLength(200)]],
+    nombre: [this.data?.nombre || '', [Validators.required, Validators.maxLength(200), CustomValidators.nombreConLetras()]],
     principioActivo: [this.data?.principioActivo || ''],
     presentacion: [this.data?.presentacion || ''],
     concentracion: [this.data?.concentracion || ''],
     categoriaId: [this.data?.categoriaId || 1, [Validators.required]],
     laboratorioId: [this.data?.laboratorioId || 1, [Validators.required]],
     unidadMedidaId: [1, [Validators.required]],
-    precioVenta: [this.data?.precioVenta || 25.0, [Validators.required, Validators.min(0.01)]],
+    precioVenta: [this.data?.precioVenta || 25.0, [Validators.required, CustomValidators.montoPositivo()]],
     requiereReceta: [this.data?.requiereReceta || 'N', [Validators.required]],
   });
 
@@ -352,13 +360,17 @@ export class ProductoFormModalComponent {
     request$.subscribe({
       next: (res) => {
         this.saving.set(false);
+        this.notification.success(
+          this.isEdit ? 'Medicamento Actualizado' : 'Medicamento Registrado',
+          `"${val.nombre}" ha sido guardado exitosamente en el catálogo.`
+        );
         this.dialogRef.close(res);
       },
       error: (err) => {
         this.saving.set(false);
-        this.errorMessage.set(
-          err.error?.message || 'Error al guardar los datos del medicamento.'
-        );
+        const msg = err.error?.message || 'Error al guardar los datos del medicamento.';
+        this.errorMessage.set(msg);
+        this.notification.error('Error al guardar', msg);
       },
     });
   }

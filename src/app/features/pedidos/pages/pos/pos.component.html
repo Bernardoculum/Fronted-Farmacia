@@ -1,59 +1,100 @@
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
         
-        <!-- Catálogo Rápido -->
+        <!-- Catálogo / Búsqueda POS (Estilo Compacto y Bajo Búsqueda) -->
         <div class="lg:col-span-7 flex flex-col gap-4">
-          <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col gap-3">
+          <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+            
+            <div class="flex items-center justify-between pb-2.5 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="w-7 h-7 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center font-bold">
+                  <mat-icon class="text-base">medication</mat-icon>
+                </span>
+                <h3 class="text-sm font-bold text-slate-800">Buscar Medicamentos para Mostrador</h3>
+              </div>
+              @if (busquedaProducto().trim().length >= 1) {
+                <span class="text-2xs text-teal-700 font-bold bg-teal-50 px-2.5 py-0.5 rounded-lg border border-teal-200">
+                  {{ productosDisponibles().length }} resultado(s)
+                </span>
+              }
+            </div>
+
+            <!-- Buscador con icono de escáner y botón de limpiar -->
             <div class="relative">
               <input
                 type="text"
                 [ngModel]="busquedaProducto()"
                 (ngModelChange)="busquedaProducto.set($event)"
-                placeholder="Buscar medicamento por nombre, código de barras o principio activo..."
-                class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+                placeholder="Escribe el nombre, principio activo o escanea el código de barras..."
+                class="w-full pl-9 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition-all"
               />
-              <mat-icon class="absolute left-3 top-2.5 text-slate-400">search</mat-icon>
+              <mat-icon class="absolute left-2.5 top-2.5 text-slate-400 text-base">search</mat-icon>
+              @if (busquedaProducto().trim()) {
+                <button
+                  type="button"
+                  (click)="busquedaProducto.set('')"
+                  class="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer">
+                  <mat-icon class="text-sm">close</mat-icon>
+                </button>
+              }
             </div>
-            <div class="flex items-center justify-between text-xs text-slate-500 px-1">
-              <span>{{ productosDisponibles().length }} medicamentos disponibles en esta sucursal</span>
-              <span class="text-teal-600 font-semibold">Clic en medicamento para añadir</span>
-            </div>
-          </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto pr-1">
-            @for (prod of productosDisponibles(); track prod.productoId) {
-              <div
-                (click)="agregarAlCarrito(prod)"
-                class="bg-white p-3.5 rounded-2xl border border-slate-200 hover:border-teal-400 hover:shadow-md cursor-pointer transition-all flex flex-col justify-between group">
-                <div>
-                  <div class="flex items-start justify-between gap-2 mb-1">
-                    <span class="text-2xs font-bold text-slate-400 font-mono">{{ prod.codigoProducto }}</span>
-                    @if (prod.requiereReceta === 'S') {
-                      <span class="px-1.5 py-0.5 bg-amber-100 text-amber-800 font-bold rounded text-[10px] flex items-center gap-0.5">
-                        <mat-icon class="text-[12px] h-[12px] w-[12px]">medical_services</mat-icon>
-                        Receta
+            <!-- Resultados de Búsqueda: SOLO se muestran cuando el cajero busca -->
+            @if (busquedaProducto().trim().length >= 1) {
+              <div class="max-h-[520px] overflow-y-auto space-y-2 pr-1">
+                @for (prod of productosDisponibles(); track prod.productoId) {
+                  <div
+                    class="px-3 py-2 bg-white hover:bg-teal-50/40 rounded-xl border border-slate-200 hover:border-teal-300 transition-all flex items-center justify-between gap-3 group">
+                    
+                    <!-- Código, Nombre y Presentación en una sola línea -->
+                    <div class="min-w-0 flex-1 flex items-center gap-2">
+                      <span class="text-2xs font-bold text-slate-400 font-mono shrink-0">{{ prod.codigoProducto }}</span>
+                      @if (prod.requiereReceta === 'S') {
+                        <span class="px-1.5 py-0.2 bg-amber-100 text-amber-800 font-bold rounded text-[10px] shrink-0 flex items-center gap-0.5">
+                          <mat-icon class="text-[10px] h-[10px] w-[10px]">medical_services</mat-icon>
+                          Receta
+                        </span>
+                      }
+                      <span class="text-sm font-bold text-slate-900 group-hover:text-teal-700 truncate">{{ prod.nombre }}</span>
+                      @if (prod.presentacion || prod.principioActivo) {
+                        <span class="text-xs text-slate-500 font-normal truncate shrink-0">
+                          ({{ prod.presentacion || prod.principioActivo }})
+                        </span>
+                      }
+                    </div>
+
+                    <!-- Precio, Stock y Botón Añadir alineados a la derecha -->
+                    <div class="flex items-center gap-2.5 shrink-0">
+                      <span class="text-xs sm:text-sm font-black text-slate-900 font-mono">
+                        Q{{ prod.precioVenta | number:'1.2-2' }}
                       </span>
-                    }
+                      <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 whitespace-nowrap">
+                        Stock: {{ obtenerStockSucursal(prod, sucursalSeleccionadaId()) }} u.
+                      </span>
+                      <button
+                        type="button"
+                        (click)="agregarAlCarrito(prod)"
+                        class="px-2.5 py-1 bg-teal-600 hover:bg-teal-700 active:scale-95 text-white font-bold rounded-lg text-[11px] transition-all flex items-center gap-0.5 shadow-2xs cursor-pointer">
+                        <mat-icon class="text-[11px] h-[11px] w-[11px] leading-none">add</mat-icon>
+                        <span>Añadir</span>
+                      </button>
+                    </div>
                   </div>
-                  <h4 class="text-sm font-bold text-slate-800 group-hover:text-teal-600 transition-colors leading-tight mb-0.5">
-                    {{ prod.nombre }}
-                  </h4>
-                  <p class="text-xs text-slate-500 mb-2">{{ prod.presentacion }}</p>
-                </div>
-
-                <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
-                  <div>
-                    <span class="text-2xs text-slate-400 block">Precio Venta</span>
-                    <span class="text-base font-black text-slate-900 font-mono">Q{{ prod.precioVenta | number:'1.2-2' }}</span>
+                } @empty {
+                  <div class="py-8 text-center text-slate-400">
+                    <mat-icon class="text-3xl text-slate-300 mx-auto block mb-1">search_off</mat-icon>
+                    <p class="text-xs font-medium">No se encontraron medicamentos disponibles con "{{ busquedaProducto() }}"</p>
                   </div>
-                  <div class="text-right">
-                    <span class="text-2xs text-slate-400 block">Stock Sucursal</span>
-                    <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700">
-                      {{ obtenerStockSucursal(prod, sucursalSeleccionadaId()) }} uds
-                    </span>
-                  </div>
-                </div>
+                }
+              </div>
+            } @else {
+              <!-- Estado inicial limpio y minimalista cuando no hay búsqueda activa -->
+              <div class="py-14 text-center text-slate-400 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                <mat-icon class="text-4xl text-slate-300 mx-auto block mb-2">barcode_scanner</mat-icon>
+                <p class="text-xs font-semibold text-slate-700">Comienza a escribir o escanea un código para buscar</p>
+                <p class="text-2xs text-slate-400 mt-1">Los medicamentos y sus existencias en esta sucursal aparecerán aquí</p>
               </div>
             }
+
           </div>
         </div>
 

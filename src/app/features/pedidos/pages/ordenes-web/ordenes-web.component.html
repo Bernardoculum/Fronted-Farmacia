@@ -53,7 +53,7 @@
                   <td class="py-3 px-3 text-right font-black text-slate-900 font-mono">Q{{ ord.total | number:'1.2-2' }}</td>
                   <td class="py-3 px-3 text-center">
                     <span class="px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-100 text-amber-800">
-                      {{ ord.estado }}
+                      {{ ord.estado | formatEnum }}
                     </span>
                   </td>
                   <td class="py-3 px-3 text-center">

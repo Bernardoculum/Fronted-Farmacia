@@ -1,0 +1,328 @@
+<div class="p-6 max-w-7xl mx-auto space-y-5">
+  <!-- Cabecera RUP Formal -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+    <div>
+      <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">Activos Fijos y Mobiliario</h2>
+      <p class="text-xs text-slate-500 mt-0.5">
+        Control de equipamiento, cadena de custodia, traslados inter-sucursal y cálculo de depreciación acumulada.
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        (click)="imprimirReporte()"
+        class="px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+        title="Imprimir reporte patrimonial con base en los filtros seleccionados"
+      >
+        <mat-icon class="!text-sm !w-4 !h-4 text-slate-500">print</mat-icon>
+        <span>Imprimir Reporte</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="abrirNuevoActivo()"
+        class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs inline-flex items-center gap-2 transition-colors cursor-pointer shadow-xs"
+      >
+        <mat-icon class="!text-sm !w-4 !h-4">add</mat-icon>
+        <span>Nuevo Activo</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- KPIs Ejecutivos / Tarjetas Métricas -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+    <div
+      (click)="filtrarPorEstado('TODOS')"
+      class="p-3 rounded-2xl bg-white border cursor-pointer transition-all duration-200"
+      [ngClass]="filtroEstado() === 'TODOS' ? 'border-2 border-slate-800 shadow-md' : 'border-slate-200 hover:border-slate-300 shadow-2xs'"
+    >
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+          <mat-icon class="!text-base !w-4 !h-4">inventory_2</mat-icon>
+        </div>
+        <div>
+          <span class="text-3xs font-bold uppercase tracking-wider text-slate-400 block">Total</span>
+          <span class="text-base font-black text-slate-800">{{ kpis().total }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div
+      (click)="filtrarPorEstado('OPERATIVO')"
+      class="p-3 rounded-2xl bg-white border cursor-pointer transition-all duration-200"
+      [ngClass]="filtroEstado() === 'OPERATIVO' ? 'border-2 border-emerald-500 shadow-md' : 'border-slate-200 hover:border-slate-300 shadow-2xs'"
+    >
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <mat-icon class="!text-base !w-4 !h-4">check_circle</mat-icon>
+        </div>
+        <div>
+          <span class="text-3xs font-bold uppercase tracking-wider text-emerald-600 block">Operativos</span>
+          <span class="text-base font-black text-emerald-700">{{ kpis().operativos }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div
+      (click)="filtrarPorEstado('EN_MANTENIMIENTO')"
+      class="p-3 rounded-2xl bg-white border cursor-pointer transition-all duration-200"
+      [ngClass]="filtroEstado() === 'EN_MANTENIMIENTO' ? 'border-2 border-amber-500 shadow-md' : 'border-slate-200 hover:border-slate-300 shadow-2xs'"
+    >
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+          <mat-icon class="!text-base !w-4 !h-4">build</mat-icon>
+        </div>
+        <div>
+          <span class="text-3xs font-bold uppercase tracking-wider text-amber-600 block">En Mtto.</span>
+          <span class="text-base font-black text-amber-700">{{ kpis().enMantenimiento }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div
+      (click)="filtrarPorEstado('EN_TRANSITO')"
+      class="p-3 rounded-2xl bg-white border cursor-pointer transition-all duration-200"
+      [ngClass]="filtroEstado() === 'EN_TRANSITO' ? 'border-2 border-sky-500 shadow-md' : 'border-slate-200 hover:border-slate-300 shadow-2xs'"
+    >
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+          <mat-icon class="!text-base !w-4 !h-4">local_shipping</mat-icon>
+        </div>
+        <div>
+          <span class="text-3xs font-bold uppercase tracking-wider text-sky-600 block">En Tránsito</span>
+          <span class="text-base font-black text-sky-700">{{ kpis().enTransito }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div
+      (click)="filtrarPorEstado('DADO_DE_BAJA')"
+      class="p-3 rounded-2xl bg-white border cursor-pointer transition-all duration-200"
+      [ngClass]="filtroEstado() === 'DADO_DE_BAJA' ? 'border-2 border-rose-500 shadow-md' : 'border-slate-200 hover:border-slate-300 shadow-2xs'"
+    >
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+          <mat-icon class="!text-base !w-4 !h-4">block</mat-icon>
+        </div>
+        <div>
+          <span class="text-3xs font-bold uppercase tracking-wider text-rose-500 block">De Baja</span>
+          <span class="text-base font-black text-rose-700">{{ kpis().dadosDeBaja }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-3 rounded-2xl bg-white border border-slate-200 shadow-2xs">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+          <mat-icon class="!text-base !w-4 !h-4">account_balance</mat-icon>
+        </div>
+        <div>
+          <span class="text-3xs font-bold uppercase tracking-wider text-slate-400 block">Inversión</span>
+          <span class="text-sm font-black text-slate-800 whitespace-nowrap">Q {{ kpis().costoTotal | number:'1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BARRA DE FILTROS SIMPLE Y COMPACTA (UNA SOLA LÍNEA, SIN CAJAS GRANDES) -->
+  <div class="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-2 flex flex-wrap items-center justify-between gap-2">
+    <div class="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
+      <!-- Buscador Compacto -->
+      <div class="relative flex-1 min-w-[180px] max-w-xs">
+        <mat-icon class="absolute left-2.5 top-2 !text-base !w-4 !h-4 text-slate-400">search</mat-icon>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="onSearch()"
+          placeholder="Buscar activo, código, serie..."
+          class="w-full pl-8 pr-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:border-emerald-500 transition-colors"
+        />
+      </div>
+
+      <!-- Filtro Sucursal Compacto -->
+      <select
+        [(ngModel)]="selectedSucursal"
+        (change)="onSearch()"
+        class="px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:border-emerald-500 text-slate-700"
+      >
+        <option [ngValue]="null">Todas las Sucursales</option>
+        @for (suc of sucursales(); track suc.sucursalId) {
+          <option [ngValue]="suc.sucursalId">{{ suc.nombre }}</option>
+        }
+      </select>
+
+      <!-- Filtro Categoría Compacto -->
+      <select
+        [(ngModel)]="selectedCategoria"
+        (change)="onSearch()"
+        class="px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:border-emerald-500 text-slate-700"
+      >
+        <option [ngValue]="null">Todas las Categorías</option>
+        @for (cat of categorias(); track cat.id) {
+          <option [ngValue]="cat.id">{{ cat.nombre }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Botones de Acción de Filtros -->
+    <div class="flex items-center gap-1.5">
+      <button
+        type="button"
+        (click)="onSearch()"
+        class="px-2.5 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
+      >
+        <mat-icon class="!text-xs !w-3.5 !h-3.5">filter_list</mat-icon>
+        <span>Filtrar</span>
+      </button>
+
+      @if (searchTerm() || selectedSucursal() || selectedCategoria() || filtroEstado() !== 'TODOS') {
+        <button
+          type="button"
+          (click)="limpiarFiltros()"
+          class="px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
+          title="Limpiar todos los filtros"
+        >
+          <mat-icon class="!text-xs !w-3.5 !h-3.5">clear</mat-icon>
+          <span>Limpiar</span>
+        </button>
+      }
+
+      <button
+        type="button"
+        (click)="cargarActivos()"
+        class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+        title="Refrescar lista"
+      >
+        <mat-icon class="!text-base !w-4 !h-4">refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenedor de Tabla con Cero Parpadeo -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex flex-col">
+    @if (loading()) {
+      <div class="absolute top-0 left-0 right-0 z-20">
+        <mat-progress-bar mode="indeterminate" class="!h-1"></mat-progress-bar>
+      </div>
+    }
+
+    <!-- Tabla Reactiva con Opacidad Suave -->
+    <div class="overflow-x-auto transition-opacity duration-200" [class.opacity-60]="loading()">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="bg-slate-50/75 border-b border-slate-200">
+          <tr>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">CÓDIGO</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">ACTIVO / DESCRIPCIÓN</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">CATEGORÍA</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">SUCURSAL</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500 text-right">COSTO (Q)</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500 text-center">ESTADO</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500 text-right">ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @if (activos().length === 0 && !loading()) {
+            <tr>
+              <td colspan="7" class="py-10 text-center text-slate-400">
+                <mat-icon class="!text-3xl !w-8 !h-8 mb-1 text-slate-300">inventory_2</mat-icon>
+                <div class="text-xs font-semibold">No se encontraron activos registrados con los filtros seleccionados.</div>
+              </td>
+            </tr>
+          } @else {
+            @for (act of activos(); track act.id) {
+              <tr class="hover:bg-slate-50/70 transition-colors">
+                <td class="py-3 px-4 font-mono font-bold text-slate-700">{{ act.codigoActivo }}</td>
+                <td class="py-3 px-4">
+                  <div class="font-bold text-slate-800">{{ act.nombre }}</div>
+                  <div class="text-2xs text-slate-400">
+                    {{ act.marca ? act.marca + ' ' : '' }}{{ act.modelo ? '(' + act.modelo + ')' : '' }}
+                    {{ act.numeroSerie ? '• S/N: ' + act.numeroSerie : '' }}
+                  </div>
+                </td>
+                <td class="py-3 px-4">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-md text-2xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                    {{ act.categoriaActivo?.nombre || 'General' }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-slate-600 font-medium">
+                  {{ act.sucursal?.nombre || 'Bodega Central' }}
+                </td>
+                <td class="py-3 px-4 font-bold text-slate-800 text-right">
+                  Q {{ act.costoAdquisicion | number:'1.2-2' }}
+                </td>
+                <td class="py-3 px-4 text-center">
+                  <span
+                    class="text-2xs font-extrabold rounded-full px-2.5 py-0.5 border inline-flex items-center"
+                    [ngClass]="{
+                      'bg-emerald-50 text-emerald-700 border-emerald-200': act.estado === 'OPERATIVO',
+                      'bg-amber-50 text-amber-700 border-amber-200': act.estado === 'EN_MANTENIMIENTO',
+                      'bg-sky-50 text-sky-700 border-sky-200': act.estado === 'EN_TRANSITO',
+                      'bg-rose-50 text-rose-700 border-rose-200': act.estado === 'DADO_DE_BAJA'
+                    }"
+                  >
+                    {{ act.estado | formatEnum }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-right whitespace-nowrap">
+                  <div class="inline-flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      (click)="verDetalle(act)"
+                      title="Ver Ficha y Depreciación"
+                      class="px-2 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold text-xs cursor-pointer inline-flex items-center gap-1 transition-colors shadow-2xs"
+                    >
+                      <mat-icon class="!text-xs !w-3.5 !h-3.5 text-slate-500">visibility</mat-icon>
+                      <span>Ficha</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      (click)="abrirEditarActivo(act)"
+                      title="Editar Activo"
+                      class="px-2 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold text-xs cursor-pointer inline-flex items-center gap-1 transition-colors shadow-2xs"
+                    >
+                      <mat-icon class="!text-xs !w-3.5 !h-3.5 text-slate-500">edit</mat-icon>
+                      <span>Editar</span>
+                    </button>
+
+                    @if (act.estado !== 'DADO_DE_BAJA') {
+                      <button
+                        type="button"
+                        (click)="abrirTraslado(act)"
+                        title="Trasladar a otra Sucursal"
+                        class="px-2 py-1 rounded-lg border border-sky-200 bg-sky-50/50 hover:bg-sky-100 text-sky-700 font-semibold text-xs cursor-pointer inline-flex items-center gap-1 transition-colors shadow-2xs"
+                      >
+                        <mat-icon class="!text-xs !w-3.5 !h-3.5 text-sky-600">local_shipping</mat-icon>
+                        <span>Traslado</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        (click)="darDeBaja(act)"
+                        title="Dar de Baja Activo"
+                        class="px-2 py-1 rounded-lg border border-rose-200 bg-rose-50/50 hover:bg-rose-100 text-rose-700 font-semibold text-xs cursor-pointer inline-flex items-center gap-1 transition-colors shadow-2xs"
+                      >
+                        <mat-icon class="!text-xs !w-3.5 !h-3.5 text-rose-600">delete_outline</mat-icon>
+                        <span>Baja</span>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginador Siempre Anclado -->
+    <div class="border-t border-slate-100 bg-white">
+      <mat-paginator
+        [length]="total()"
+        [pageSize]="limit()"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+      ></mat-paginator>
+    </div>
+  </div>
+</div>

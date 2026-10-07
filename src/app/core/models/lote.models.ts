@@ -27,7 +27,24 @@ export interface LoteItem {
   estadoVencimiento: 'VIGENTE' | 'POR_VENCER' | 'VENCIDO';
   producto: LoteProductoRef;
   stockTotalLote: number;
+  stockEnSede?: number;
   inventarios: LoteInventarioRef[];
+}
+
+export interface LoteKpis {
+  total: number;
+  vigentes: number;
+  porVencer: number;
+  vencidos: number;
+}
+
+export interface PaginatedLotesResponse {
+  data: LoteItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  kpis?: LoteKpis;
 }
 
 export interface FilterLoteParams {
@@ -35,6 +52,8 @@ export interface FilterLoteParams {
   productoId?: number;
   sucursalId?: number;
   estadoVencimiento?: 'TODOS' | 'VIGENTE' | 'POR_VENCER' | 'VENCIDO';
+  page?: number;
+  limit?: number;
 }
 
 export interface CreateLoteDto {
@@ -45,6 +64,8 @@ export interface CreateLoteDto {
   costoUnitario: number;
   sucursalId?: number;
   stockInicial?: number;
+  observacion?: string;
+  nuevoPrecioVenta?: number;
 }
 
 export interface UpdateLoteDto {

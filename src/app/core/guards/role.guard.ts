@@ -1,17 +1,16 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn, Router, UrlTree } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { Role } from '../enums/role.enum';
 
 export function roleGuard(allowedRoles: (Role | string)[]): CanActivateFn {
-  return () => {
+  return (): boolean | UrlTree => {
     const authService = inject(AuthService);
     const router = inject(Router);
 
     const currentUser = authService.currentUser();
     if (!currentUser) {
-      router.navigate(['/login']);
-      return false;
+      return router.createUrlTree(['/login']);
     }
 
     const userRole = currentUser.rol;
@@ -26,7 +25,6 @@ export function roleGuard(allowedRoles: (Role | string)[]): CanActivateFn {
     }
 
     console.warn(`[roleGuard] Acceso no autorizado para el rol ${userRole}. Redirigiendo a ruta por defecto...`);
-    router.navigate([authService.getDefaultRouteForRole()]);
-    return false;
+    return router.createUrlTree([authService.getDefaultRouteForRole()]);
   };
 }

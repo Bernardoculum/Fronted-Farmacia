@@ -45,24 +45,18 @@
         <a
           routerLink="call-center"
           routerLinkActive="bg-white text-purple-800 font-bold shadow-xs"
-          class="flex-1 lg:flex-initial px-3.5 py-2 rounded-lg text-xs sm:text-sm flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium transition-all whitespace-nowrap cursor-pointer">
+          class="flex-1 lg:flex-initial px-3.5 py-2 rounded-lg text-xs sm:text-sm flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium transition-all whitespace-nowrap cursor-pointer relative">
           <mat-icon class="text-base text-purple-600">support_agent</mat-icon>
           <span>Call Center & Despacho</span>
-        </a>
-      }
-
-      @if (authService.canAccessWebOrders()) {
-        <a
-          routerLink="web"
-          routerLinkActive="bg-white text-blue-800 font-bold shadow-xs"
-          class="flex-1 lg:flex-initial px-3.5 py-2 rounded-lg text-xs sm:text-sm flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium transition-all whitespace-nowrap cursor-pointer relative">
-          <mat-icon class="text-base text-blue-600">language</mat-icon>
-          <span>Órdenes Web / Portal</span>
           @if (state.ordenesWebPendientes().length > 0) {
-            <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+            <span class="px-1.5 py-0.2 bg-purple-600 text-white font-black rounded-full text-[10px] animate-pulse">
+              {{ state.ordenesWebPendientes().length }} web
+            </span>
           }
         </a>
       }
+
+      
 
       @if (authService.canAccessHistorial()) {
         <a
@@ -78,10 +72,7 @@
 
     <!-- Selector de Sucursal y Regla FEFO Activa -->
     <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-semibold">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span>Regla FEFO Activa</span>
-      </div>
+      
 
       <div class="flex items-center gap-2">
         <label class="text-xs font-bold text-slate-500 hidden sm:inline">Sucursal:</label>
@@ -117,3 +108,5 @@
     (clienteCreado)="state.onClienteCreado($event)">
   </app-cliente-form-modal>
 }
+
+

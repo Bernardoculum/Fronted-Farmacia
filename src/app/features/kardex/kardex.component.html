@@ -1,0 +1,300 @@
+<div class="p-4 sm:p-6 lg:p-8 space-y-5 max-w-7xl mx-auto">
+  <!-- Cabecera Limpia (Sin prefijos RF / CUN) -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-200">
+    <div class="flex items-center gap-3.5">
+      <img src="/logo.png" alt="Farmacia Red Central" class="w-11 h-11 object-contain rounded-xl p-0.5 border border-slate-200/60 bg-white shadow-2xs shrink-0" />
+      <div>
+        <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
+          Libro Mayor de Kardex
+        </h2>
+        <p class="text-xs text-slate-500 mt-0.5">
+          Trazabilidad inmutable de existencias, entradas, salidas y saldos en tiempo real.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        (click)="imprimirKardex()"
+        class="px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+        matTooltip="Imprime reporte formal del Libro Mayor de Kardex según filtros activos (sin la pantalla)"
+      >
+        <mat-icon class="!text-sm !w-4 !h-4 text-emerald-600">print</mat-icon>
+        <span>Imprimir Kardex</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="exportarCsvKardex()"
+        class="px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+        matTooltip="Descarga los movimientos del Kardex en formato Excel (CSV)"
+      >
+        <mat-icon class="!text-sm !w-4 !h-4 text-sky-600">table_view</mat-icon>
+        <span>Exportar Excel</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="abrirModalAjuste()"
+        class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs cursor-pointer inline-flex items-center gap-2 transition-all shadow-xs"
+      >
+        <mat-icon class="!text-sm !w-4 !h-4">tune</mat-icon>
+        <span>+ Registrar Ajuste</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tarjetas Métricas KPI (Filtros Rápidos) -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+    <div
+      (click)="setFiltroTipo('TODOS')"
+      class="bg-white rounded-2xl p-3.5 cursor-pointer transition-all duration-200"
+      [ngClass]="filtroTipo() === 'TODOS' && !filtroReferencia() ? 'border-2 border-slate-800 shadow-md' : 'border border-slate-200 hover:border-slate-300 shadow-2xs'"
+    >
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+          <mat-icon class="!text-base !w-4 !h-4">receipt_long</mat-icon>
+        </div>
+        <div>
+          <div class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Total Movimientos</div>
+          <div class="text-base font-black text-slate-800">{{ kardexService.kpiTotal() }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      (click)="setFiltroTipo('ENTRADA')"
+      class="bg-white rounded-2xl p-3.5 cursor-pointer transition-all duration-200"
+      [ngClass]="filtroTipo() === 'ENTRADA' ? 'border-2 border-emerald-500 shadow-md' : 'border border-slate-200 hover:border-slate-300 shadow-2xs'"
+    >
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <mat-icon class="!text-base !w-4 !h-4">arrow_downward</mat-icon>
+        </div>
+        <div>
+          <div class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Entradas / Recepción</div>
+          <div class="text-base font-black text-emerald-700">{{ kardexService.kpiEntradas() }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      (click)="setFiltroTipo('SALIDA')"
+      class="bg-white rounded-2xl p-3.5 cursor-pointer transition-all duration-200"
+      [ngClass]="filtroTipo() === 'SALIDA' ? 'border-2 border-sky-500 shadow-md' : 'border border-slate-200 hover:border-slate-300 shadow-2xs'"
+    >
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+          <mat-icon class="!text-base !w-4 !h-4">arrow_upward</mat-icon>
+        </div>
+        <div>
+          <div class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Salidas / Ventas</div>
+          <div class="text-base font-black text-sky-700">{{ kardexService.kpiSalidas() }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      (click)="setFiltroReferencia('AJUSTE_INVENTARIO')"
+      class="bg-white rounded-2xl p-3.5 cursor-pointer transition-all duration-200"
+      [ngClass]="filtroReferencia() === 'AJUSTE_INVENTARIO' ? 'border-2 border-rose-500 shadow-md' : 'border border-slate-200 hover:border-slate-300 shadow-2xs'"
+    >
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+          <mat-icon class="!text-base !w-4 !h-4">warning</mat-icon>
+        </div>
+        <div>
+          <div class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Mermas / Ajustes</div>
+          <div class="text-base font-black text-rose-700">{{ kardexService.kpiMermas() }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BARRA DE FILTROS SIMPLE Y COMPACTA (UNA SOLA LÍNEA) -->
+  <div class="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-2 flex flex-wrap items-center justify-between gap-2">
+    <div class="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
+      <!-- Buscador Compacto -->
+      <div class="relative flex-1 min-w-[180px] max-w-sm">
+        <mat-icon class="absolute left-2.5 top-2 !text-base !w-4 !h-4 text-slate-400">search</mat-icon>
+        <input
+          type="text"
+          [value]="searchTerm()"
+          (input)="onSearchChange($event)"
+          placeholder="Buscar medicamento, lote o referencia..."
+          class="w-full pl-8 pr-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:border-emerald-500 transition-colors"
+        />
+      </div>
+
+      <!-- Selector Sucursal o Badge de Custodia -->
+      @if (authService.hasGlobalBranchAccess()) {
+        <select
+          [value]="selectedSucursalId() || ''"
+          (change)="onSucursalChange($event)"
+          class="px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:border-emerald-500 text-slate-700 cursor-pointer font-medium"
+        >
+          <option value="">Todas las Sucursales</option>
+          @for (suc of sucursales(); track suc.sucursalId) {
+            <option [value]="suc.sucursalId">{{ suc.nombre }}</option>
+          }
+        </select>
+      } @else {
+        <div class="px-2.5 py-1.5 text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg flex items-center gap-1.5 shadow-2xs">
+          <mat-icon class="!text-xs !w-3.5 !h-3.5 text-emerald-600">storefront</mat-icon>
+          <span>{{ authService.currentUser()?.sucursal || 'Mi Sucursal' }}</span>
+        </div>
+      }
+    </div>
+
+    <!-- Botones de Acción de Filtros -->
+    <div class="flex items-center gap-1.5">
+      @if (searchTerm() || selectedSucursalId() || filtroTipo() !== 'TODOS' || filtroReferencia()) {
+        <button
+          type="button"
+          (click)="limpiarFiltros()"
+          class="px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
+          title="Limpiar filtros"
+        >
+          <mat-icon class="!text-xs !w-3.5 !h-3.5">clear</mat-icon>
+          <span>Limpiar</span>
+        </button>
+      }
+
+      <button
+        type="button"
+        (click)="cargarDatos()"
+        class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+        title="Actualizar datos"
+      >
+        <mat-icon class="!text-base !w-4 !h-4">refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenedor de Tabla Simplificada y Optimizada con Cero Parpadeo -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex flex-col">
+    @if (kardexService.loading()) {
+      <div class="absolute top-0 left-0 right-0 z-20">
+        <mat-progress-bar mode="indeterminate" class="!h-1"></mat-progress-bar>
+      </div>
+    }
+
+    <!-- Tabla Reactiva con Opacidad Suave -->
+    <div class="overflow-x-auto transition-opacity duration-200" [class.opacity-60]="kardexService.loading()">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="bg-slate-50/75 border-b border-slate-200">
+          <tr>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">NO.</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">FECHA</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">MEDICAMENTO</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">SUCURSAL</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500 text-center">TIPO</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500 text-right">CANTIDAD</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500 text-right">SALDO</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">OPERACIÓN</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500 text-right">ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @if (kardexService.movimientos().length === 0 && !kardexService.loading()) {
+            <tr>
+              <td colspan="9" class="py-10 text-center text-slate-400">
+                <mat-icon class="!text-3xl !w-8 !h-8 mb-1 text-slate-300">receipt_long</mat-icon>
+                <div class="text-xs font-semibold">No se encontraron movimientos registrados con los filtros aplicados.</div>
+              </td>
+            </tr>
+          } @else {
+            @for (m of kardexService.movimientos(); track m.movimientoInventarioId) {
+              <tr class="hover:bg-slate-50/70 transition-colors">
+                <!-- No. Correlativo -->
+                <td class="py-3 px-4 font-mono font-bold text-slate-600 whitespace-nowrap">
+                  {{ m.movimientoInventarioId }}
+                </td>
+
+                <!-- Fecha y Hora -->
+                <td class="py-3 px-4 text-slate-500 whitespace-nowrap">
+                  {{ m.fechaMovimiento | date:'dd/MM/yyyy HH:mm' }}
+                </td>
+
+                <!-- Medicamento: En una sola línea limpia (font-semibold text-slate-800) -->
+                <td class="py-3 px-4">
+                  <span class="font-semibold text-slate-800 truncate block max-w-xs" [title]="m.medicamento">
+                    {{ m.medicamento }}
+                  </span>
+                </td>
+
+                <!-- Sucursal -->
+                <td class="py-3 px-4 text-slate-600 font-medium whitespace-nowrap">
+                  <span class="inline-flex items-center gap-1">
+                    <mat-icon class="!w-3.5 !h-3.5 !text-xs text-emerald-600">storefront</mat-icon>
+                    <span>{{ m.sucursal }}</span>
+                  </span>
+                </td>
+
+                <!-- Tipo de Movimiento -->
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <span
+                    class="text-2xs font-extrabold rounded-full px-2.5 py-0.5 border inline-flex items-center gap-1"
+                    [ngClass]="{
+                      'bg-emerald-50 text-emerald-700 border-emerald-200': m.tipoMovimiento === 'ENTRADA',
+                      'bg-sky-50 text-sky-700 border-sky-200': m.tipoMovimiento === 'SALIDA'
+                    }"
+                  >
+                    <mat-icon class="!text-xs !w-3 !h-3">
+                      {{ m.tipoMovimiento === 'ENTRADA' ? 'arrow_downward' : 'arrow_upward' }}
+                    </mat-icon>
+                    <span>{{ m.tipoMovimiento | formatEnum }}</span>
+                  </span>
+                </td>
+
+                <!-- Cantidad -->
+                <td
+                  class="py-3 px-4 text-right font-black whitespace-nowrap"
+                  [ngClass]="m.tipoMovimiento === 'ENTRADA' ? 'text-emerald-700' : 'text-slate-800'"
+                >
+                  {{ m.tipoMovimiento === 'ENTRADA' ? '+' : '-' }}{{ m.cantidad }}
+                </td>
+
+                <!-- Saldo Resultante -->
+                <td class="py-3 px-4 text-right font-black text-slate-900 whitespace-nowrap">
+                  {{ m.cantidadNueva }}
+                </td>
+
+                <!-- Operación / Origen Formateado -->
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <span class="text-2xs font-semibold px-2 py-0.5 rounded-md border bg-slate-50 text-slate-700 border-slate-200">
+                    {{ (m.referenciaTipo || 'General') | formatEnum }}
+                  </span>
+                </td>
+
+                <!-- Botón de Detalle Minimalista -->
+                <td class="py-3 px-4 text-right whitespace-nowrap">
+                  <button
+                    type="button"
+                    (click)="verDetalle(m)"
+                    class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold text-xs cursor-pointer inline-flex items-center gap-1.5 transition-colors shadow-2xs"
+                    title="Ver detalle completo del movimiento"
+                  >
+                    <mat-icon class="!text-sm !w-4 !h-4 text-slate-500">visibility</mat-icon>
+                    <span>Detalle</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginador Siempre Anclado -->
+    <div class="border-t border-slate-100 bg-white">
+      <mat-paginator
+        [length]="kardexService.totalItems()"
+        [pageSize]="kardexService.pageSize()"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+      ></mat-paginator>
+    </div>
+  </div>
+</div>

@@ -1,152 +1,300 @@
-      <div class="flex flex-col gap-5">
+<div class="flex flex-col gap-5">
+
+  <!-- Pestañas Internas del Call Center: Llamadas vs Pedidos Web -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 shadow-xs">
+    <div class="flex items-center gap-2 w-full sm:w-auto">
+      <button
+        type="button"
+        (click)="modoCallCenter.set('LLAMADA')"
+        [ngClass]="modoCallCenter() === 'LLAMADA'
+          ? 'bg-purple-600 text-white font-bold shadow-xs'
+          : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium'"
+        class="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer">
+        <mat-icon class="text-base">phone_in_talk</mat-icon>
+        <span>Atención de Llamadas Telefónicas</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="modoCallCenter.set('WEB')"
+        [ngClass]="modoCallCenter() === 'WEB'
+          ? 'bg-blue-600 text-white font-bold shadow-xs'
+          : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium'"
+        class="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer">
+        <mat-icon class="text-base">language</mat-icon>
+        <span>Bandeja de Pedidos Web</span>
+        @if (ordenesWebPendientes().length > 0) {
+          <span
+            [ngClass]="modoCallCenter() === 'WEB' ? 'bg-white text-blue-700' : 'bg-blue-600 text-white'"
+            class="px-1.5 py-0.2 rounded-full text-[10px] font-black animate-pulse">
+            {{ ordenesWebPendientes().length }}
+          </span>
+        }
+      </button>
+    </div>
+
+
+  </div>
+
+
+  <!-- ================================================================================== -->
+  <!-- VISTA 1: ATENCIÓN DE LLAMADA TELEFÓNICA (CON EVALUACIÓN INTELIGENTE Y DESPACHO) -->
+  <!-- ================================================================================== -->
+  @if (modoCallCenter() === 'LLAMADA') {
+
         
-        <!-- PANEL DE DIAGNÓSTICO EN VIVO Y SUGERENCIA INTELIGENTE -->
+        <!-- PANEL DE DIAGNÓSTICO EN VIVO Y SUGERENCIA INTELIGENTE (MODO CLARO MINIMALISTA CORPORATIVO) -->
         @if (pedidosService.evaluacionActual()) {
-          <div class="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white p-5 rounded-3xl shadow-xl border border-purple-500/30 animate-fade-in flex flex-col gap-4">
+          <div class="bg-white text-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200 animate-fade-in flex flex-col gap-4">
             
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
-              <div class="flex items-center gap-2.5">
-                <span class="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-400/40 text-purple-300 flex items-center justify-center">
-                  <mat-icon>route</mat-icon>
+            <!-- Cabecera y KPIs Minimalistas -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              
+              <!-- Título y Badge de Factibilidad -->
+              <div class="flex items-start sm:items-center gap-3">
+                <span class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center shrink-0">
+                  <mat-icon class="text-xl">local_shipping</mat-icon>
                 </span>
                 <div>
-                  <div class="flex items-center gap-2">
-                    <h3 class="text-base font-bold text-white">Recomendación Inteligente de Despacho (En Llamada)</h3>
-                    <span class="px-2 py-0.5 rounded-full text-2xs font-extrabold"
-                      [ngClass]="pedidosService.evaluacionActual()?.factibilidad === 'INMEDIATA' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'">
-                      {{ pedidosService.evaluacionActual()?.factibilidad === 'INMEDIATA' ? '🟢 ENTREGA INMEDIATA FACTIBLE' : '🟡 SUCURSAL ALTERNA' }}
-                    </span>
+                  <div class="flex items-center gap-2.5 flex-wrap">
+                    <h3 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                      Recomendación de Despacho Inmediato
+                    </h3>
+                    @if (pedidosService.evaluacionActual()?.factibilidad === 'INMEDIATA') {
+                      <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                        ✓ Entrega factible
+                      </span>
+                    } @else {
+                      <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 inline-flex items-center gap-1">
+                        ⚠ Sucursal alterna
+                      </span>
+                    }
                   </div>
-                  <p class="text-xs text-purple-200/80">Cálculo en tiempo real por distancia de coordenadas (Haversine) y stock en farmacias</p>
+                  <p class="text-xs text-slate-500 mt-0.5">
+                    Cálculo en tiempo real por distancia de coordenadas (Haversine) y existencias en farmacias.
+                  </p>
                 </div>
               </div>
 
-              <!-- Tiempo Estimado (ETA) y Farmacia Óptima -->
-              @if (pedidosService.evaluacionActual()?.sucursalRecomendada; as opt) {
-                <div class="flex items-center gap-3 bg-white/10 px-3.5 py-2 rounded-2xl backdrop-blur-md border border-white/10">
-                  <div class="text-right">
-                    <span class="text-2xs text-purple-200 block uppercase font-bold">Tiempo Estimado (ETA)</span>
-                    <span class="text-sm sm:text-base font-black text-emerald-300 font-mono">
+              <!-- Tarjetas Métricas Minimalistas (ETA & Distancia) + Botón Cerrar -->
+              <div class="flex items-center gap-2.5 self-end lg:self-auto">
+                @if (pedidosService.evaluacionActual()?.sucursalRecomendada; as opt) {
+                  <div class="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 min-w-[125px]">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">
+                      Tiempo Estimado (ETA)
+                    </span>
+                    <span class="text-sm sm:text-base font-black text-slate-900 font-mono block">
                       ⏱️ {{ opt.rangoTiempo }}
                     </span>
                   </div>
-                  <div class="h-8 w-px bg-white/20"></div>
-                  <div>
-                    <span class="text-2xs text-purple-200 block uppercase font-bold">Distancia al Cliente</span>
-                    <span class="text-sm sm:text-base font-black text-white font-mono">
+
+                  <div class="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 min-w-[125px]">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">
+                      Distancia al Cliente
+                    </span>
+                    <span class="text-sm sm:text-base font-black text-slate-900 font-mono block">
                       📍 {{ opt.distanciaKm }} km
                     </span>
                   </div>
-                </div>
-              }
+                }
+
+                <button
+                  type="button"
+                  (click)="cancelarEvaluacion()"
+                  class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-all cursor-pointer shrink-0"
+                  matTooltip="Cerrar recomendación">
+                  <mat-icon class="text-base">close</mat-icon>
+                </button>
+              </div>
+
             </div>
 
-            <!-- Guión del Operador para lectura directa al cliente en la llamada -->
-            <div class="p-3.5 bg-white/5 rounded-2xl border border-white/10 flex items-start gap-3">
-              <mat-icon class="text-purple-300 shrink-0 mt-0.5">record_voice_over</mat-icon>
-              <div>
-                <span class="text-2xs font-bold text-purple-300 uppercase tracking-wider block mb-0.5">
-                  Guión en Vivo para el Operador del Call Center:
+            <!-- Guión para el Operador (Callout Neutro Gris Claro) -->
+            <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-3">
+              <span class="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                <mat-icon class="text-sm">record_voice_over</mat-icon>
+              </span>
+              <div class="flex-1 min-w-0">
+                <span class="text-2xs font-bold text-slate-500 uppercase tracking-wider block mb-0.5">
+                  Guión de Lectura Rápida para el Operador del Call Center:
                 </span>
-                <p class="text-xs sm:text-sm text-slate-100 italic leading-relaxed">
+                <p class="text-xs sm:text-sm text-slate-700 leading-relaxed italic font-normal">
                   "{{ pedidosService.evaluacionActual()?.mensajeParaCliente }}"
                 </p>
               </div>
             </div>
 
-            <!-- Comparador de Sucursales Evaluadas -->
-            <div>
-              <span class="text-2xs font-bold text-purple-200 uppercase tracking-wider block mb-2">
-                Comparativa de Farmacias por Localización y Stock:
-              </span>
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                @for (suc of pedidosService.evaluacionActual()?.opcionesSucursales; track suc.sucursalId) {
-                  <div
-                    (click)="asignarSucursal(suc)"
-                    [ngClass]="sucursalSeleccionadaId() === suc.sucursalId ? 'bg-purple-600/40 border-purple-400 ring-2 ring-purple-400' : 'bg-white/5 border-white/10 hover:bg-white/10'"
-                    class="p-3 rounded-xl border cursor-pointer transition-all flex flex-col justify-between gap-2">
-                    
-                    <div class="flex items-start justify-between gap-1">
-                      <div class="min-w-0">
-                        <p class="text-xs font-bold text-white truncate">{{ suc.nombre }}</p>
-                        <p class="text-2xs text-purple-200/70 truncate">{{ suc.direccion }}</p>
-                      </div>
-                      @if (suc.esOptima) {
-                        <span class="px-1.5 py-0.5 bg-emerald-400 text-emerald-950 font-black rounded text-[9px] uppercase shrink-0">
-                          ÓPTIMA
-                        </span>
-                      }
-                    </div>
-
-                    <div class="flex items-center justify-between text-2xs pt-1 border-t border-white/10">
-                      <span class="font-mono text-purple-200">📍 {{ suc.distanciaKm }} km &bull; ⏱️ {{ suc.tiempoEstimadoMinutos }}m</span>
-                      <span [ngClass]="suc.stockCompleto ? 'text-emerald-300 font-bold' : 'text-amber-300 font-medium'">
-                        {{ suc.stockCompleto ? '✓ Stock 100%' : '✗ Stock Parcial' }}
-                      </span>
-                    </div>
-
-                  </div>
-                }
+            <!-- Comparativa de Sucursales (Tabla Interactiva Limpia) -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Comparativa de Farmacias por Localización y Stock:
+                </h4>
+                <span class="text-2xs text-slate-400 hidden sm:inline">Haz clic en una opción para seleccionarla</span>
               </div>
+
+              <div class="overflow-x-auto rounded-xl border border-slate-200">
+                <table class="w-full text-left text-xs text-slate-600">
+                  <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-2xs border-b border-slate-200">
+                    <tr>
+                      <th class="py-2.5 px-3.5">Farmacia / Sucursal</th>
+                      <th class="py-2.5 px-3.5">Ubicación</th>
+                      <th class="py-2.5 px-3.5">Distancia & Tiempo</th>
+                      <th class="py-2.5 px-3.5 text-center">Disponibilidad de Stock</th>
+                      <th class="py-2.5 px-3.5 text-right">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (suc of pedidosService.evaluacionActual()?.opcionesSucursales; track suc.sucursalId) {
+                      <tr
+                        [ngClass]="suc.esOptima ? 'bg-emerald-50/40 hover:bg-emerald-50/70' : 'bg-white hover:bg-slate-50'"
+                        class="transition-colors">
+                        
+                        <td class="py-3 px-3.5 font-bold text-slate-800">
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <span>{{ suc.nombre }}</span>
+                            @if (suc.esOptima) {
+                              <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded-md whitespace-nowrap">
+                                ★ Recomendada / Menor tiempo
+                              </span>
+                            }
+                          </div>
+                        </td>
+
+                        <td class="py-3 px-3.5 text-slate-500 max-w-[220px] truncate" [title]="suc.direccion">
+                          {{ suc.direccion }}
+                        </td>
+
+                        <td class="py-3 px-3.5 font-mono text-slate-700 whitespace-nowrap">
+                          <span>📍 {{ suc.distanciaKm }} km</span>
+                          <span class="text-slate-400 mx-1">&bull;</span>
+                          <span>⏱️ {{ suc.tiempoEstimadoMinutos }}m</span>
+                        </td>
+
+                        <td class="py-3 px-3.5 text-center whitespace-nowrap">
+                          @if (suc.stockCompleto) {
+                            <span class="px-2.5 py-1 rounded-md text-2xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                              ✓ Stock Completo
+                            </span>
+                          } @else {
+                            <span class="px-2.5 py-1 rounded-md text-2xs font-bold bg-rose-50 text-rose-700 border border-rose-200 inline-flex items-center gap-1">
+                              ⛔ Agotado / Sin Stock
+                            </span>
+                          }
+                        </td>
+
+                        <td class="py-3 px-3.5 text-right whitespace-nowrap">
+                          @if (suc.stockCompleto) {
+                            <button
+                              type="button"
+                              (click)="asignarYCerrar(suc)"
+                              [ngClass]="suc.esOptima
+                                ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs font-bold'
+                                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold'"
+                              class="px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer inline-flex items-center gap-1.5">
+                              <span>Seleccionar y Despachar</span>
+                              @if (sucursalSeleccionadaId() === suc.sucursalId) {
+                                <mat-icon class="text-xs text-emerald-300">check</mat-icon>
+                              }
+                            </button>
+                          } @else {
+                            <button
+                              type="button"
+                              disabled
+                              class="px-3 py-1.5 rounded-xl text-xs bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed inline-flex items-center gap-1.5 font-medium opacity-60"
+                              matTooltip="No disponible para despacho porque no cuenta con existencias suficientes del pedido.">
+                              <mat-icon class="text-xs text-rose-400">block</mat-icon>
+                              <span>Sin Existencias</span>
+                            </button>
+                          }
+                        </td>
+
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Barra Inferior de Acción / Descartar -->
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-500">
+              <span>Al seleccionar una farmacia, se asigna como sucursal despachadora y se cierra esta sugerencia.</span>
+              <button
+                type="button"
+                (click)="cancelarEvaluacion()"
+                class="text-slate-400 hover:text-slate-700 font-medium transition-colors cursor-pointer flex items-center gap-1">
+                <span>Descartar cálculo</span>
+              </button>
             </div>
 
           </div>
         }
 
-        <!-- Grid de Captura y Despacho -->
+                <!-- Grid de Captura y Despacho -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
           
           <!-- Datos del Paciente y Dirección (Columna Izquierda 6 cols) -->
           <div class="lg:col-span-6 flex flex-col gap-4">
             
             <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <div class="flex items-center gap-2">
-                  <span class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
-                    <mat-icon class="text-lg">person_pin</mat-icon>
+                  <span class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                    <mat-icon class="text-base">person</mat-icon>
                   </span>
-                  <div>
-                    <h3 class="text-sm font-bold text-slate-800">Identificación del Paciente en Llamada</h3>
-                    <p class="text-2xs text-slate-500">Búsqueda rápida por teléfono o nombre</p>
-                  </div>
+                  <h3 class="text-sm font-bold text-slate-800">Paciente en Llamada</h3>
                 </div>
 
                 <button
                   type="button"
                   (click)="mostrarModalCliente.set(true)"
-                  class="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold flex items-center gap-1 transition-all">
-                  <mat-icon class="text-sm">person_add</mat-icon>
-                  <span>+ Nuevo Cliente</span>
+                  class="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer">
+                  <mat-icon class="text-xs">person_add</mat-icon>
+                  <span>+ Nuevo</span>
                 </button>
               </div>
 
-              <!-- Campo Búsqueda Cliente -->
+              <!-- Buscador Compacto de Paciente -->
               <div class="relative">
                 <input
                   type="text"
                   [ngModel]="busquedaCliente()"
                   (ngModelChange)="onBuscarCliente($event)"
-                  placeholder="Ingresa teléfono (ej. 41238801) o nombre del paciente..."
-                  class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                  placeholder="Buscar paciente por teléfono o nombre..."
+                  class="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
                 />
-                <mat-icon class="absolute left-3 top-2.5 text-slate-400">phone</mat-icon>
+                <mat-icon class="absolute left-2.5 top-2 text-slate-400 text-sm">phone</mat-icon>
+                @if (busquedaCliente().trim()) {
+                  <button
+                    type="button"
+                    (click)="busquedaCliente.set('')"
+                    class="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 cursor-pointer">
+                    <mat-icon class="text-sm">close</mat-icon>
+                  </button>
+                }
               </div>
 
-              <!-- Sugerencias de clientes -->
-              @if (pedidosService.clientesEncontrados().length > 0 && !clienteSeleccionado()) {
-                <div class="p-2 bg-slate-50 rounded-xl border border-slate-200 max-h-40 overflow-y-auto space-y-1">
-                  @for (c of pedidosService.clientesEncontrados(); track c.clienteId) {
-                    <div
-                      (click)="seleccionarCliente(c)"
-                      class="p-2 bg-white rounded-lg border border-slate-100 hover:border-purple-300 hover:bg-purple-50/50 cursor-pointer transition-all flex items-center justify-between">
-                      <div>
-                        <p class="text-xs font-bold text-slate-800">{{ c.nombre }} {{ c.apellido }}</p>
-                        <p class="text-2xs text-slate-500">Tel: {{ c.telefono }} &bull; {{ c.direccion }}</p>
+              <!-- Sugerencias de clientes: SOLO si el operador escribe en el buscador -->
+              @if (busquedaCliente().trim().length >= 1 && !clienteSeleccionado()) {
+                @if (pedidosService.clientesEncontrados().length > 0) {
+                  <div class="p-1.5 bg-slate-50 rounded-xl border border-slate-200 max-h-36 overflow-y-auto space-y-1">
+                    @for (c of pedidosService.clientesEncontrados(); track c.clienteId) {
+                      <div
+                        (click)="seleccionarCliente(c)"
+                        class="p-2 bg-white rounded-lg border border-slate-100 hover:border-purple-300 hover:bg-purple-50/50 cursor-pointer transition-all flex items-center justify-between gap-2">
+                        <div class="min-w-0 flex-1">
+                          <p class="text-xs font-bold text-slate-800 truncate">{{ c.nombre }} {{ c.apellido }}</p>
+                          <p class="text-2xs text-slate-500 truncate">📞 {{ c.telefono }} &bull; {{ c.direccion }}</p>
+                        </div>
+                        <span class="text-2xs font-bold text-purple-600 shrink-0">Seleccionar</span>
                       </div>
-                      <span class="text-2xs font-bold text-purple-600">Seleccionar</span>
-                    </div>
-                  }
-                </div>
+                    }
+                  </div>
+                } @else {
+                  <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-center text-slate-500 text-2xs">
+                    No se encontró paciente con "{{ busquedaCliente() }}". Puedes crearlo con "+ Nuevo".
+                  </div>
+                }
               }
 
               <!-- Cliente Seleccionado -->
@@ -168,7 +316,17 @@
               <!-- Datos de Entrega -->
               <div class="space-y-3 pt-2">
                 <div>
-                  <label class="block text-2xs font-bold text-slate-700 uppercase mb-1">Dirección de Entrega a Domicilio *</label>
+                  <div class="flex items-center justify-between mb-1">
+                    <label class="block text-2xs font-bold text-slate-700 uppercase">Dirección de Entrega a Domicilio *</label>
+                    <button
+                      type="button"
+                      (click)="evaluarDespachoEnLlamada()"
+                      class="text-2xs font-bold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-2 py-0.5 rounded-lg border border-purple-200 flex items-center gap-1 transition-all cursor-pointer"
+                      matTooltip="Calcular ruta inteligente y comparar stock">
+                      <mat-icon class="text-[14px] h-[14px] w-[14px]">near_me</mat-icon>
+                      <span>Recomendar Despacho</span>
+                    </button>
+                  </div>
                   <input
                     type="text"
                     [ngModel]="direccionEntrega()"
@@ -178,15 +336,15 @@
                   />
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
-                    <label class="block text-2xs font-bold text-slate-700 uppercase mb-1">Teléfono Repartidor *</label>
+                    <label class="block text-2xs font-bold text-slate-700 uppercase mb-1">Teléfono Motorista *</label>
                     <input
                       type="text"
                       [ngModel]="telefonoEntrega()"
                       (ngModelChange)="telefonoEntrega.set($event)"
-                      placeholder="Para confirmar llegada..."
-                      class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="Teléfono de contacto..."
+                      class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
 
@@ -197,19 +355,19 @@
                       [ngModel]="referenciaEntrega()"
                       (ngModelChange)="referenciaEntrega.set($event)"
                       placeholder="Color portón, frente a..."
-                      class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label class="block text-2xs font-bold text-slate-700 uppercase mb-1">Instrucciones Especiales de Pago / Entrega</label>
+                  <label class="block text-2xs font-bold text-slate-700 uppercase mb-1">Indicaciones Especiales</label>
                   <textarea
-                    rows="2"
+                    rows="1"
                     [ngModel]="observacion()"
                     (ngModelChange)="observacion.set($event)"
                     placeholder="Ej. Llevar cambio de Q100, timbre no funciona..."
-                    class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                    class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
                   ></textarea>
                 </div>
               </div>
@@ -222,38 +380,71 @@
           <div class="lg:col-span-6 flex flex-col gap-4">
             
             <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
-              <div class="flex items-center justify-between">
-                <h3 class="text-sm font-bold text-slate-800">Medicamentos Solicitados en la Llamada</h3>
-                <span class="text-2xs text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-200">
-                  Despachando desde: {{ nombreSucursalActual() }}
+              <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+                <span class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                  <mat-icon class="text-base">medication</mat-icon>
                 </span>
+                <h3 class="text-sm font-bold text-slate-800">Medicamentos</h3>
               </div>
 
+              <!-- Buscador de Medicamentos -->
               <div class="relative">
                 <input
                   type="text"
                   [ngModel]="busquedaProducto()"
                   (ngModelChange)="busquedaProducto.set($event)"
-                  placeholder="Buscar medicamento para el cliente..."
-                  class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="Buscar medicamento para añadir al pedido..."
+                  class="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
                 />
                 <mat-icon class="absolute left-2.5 top-2 text-slate-400 text-sm">search</mat-icon>
-              </div>
-
-              <div class="flex gap-2 overflow-x-auto pb-2">
-                @for (prod of productosDisponibles(); track prod.productoId) {
-                  <div
-                    (click)="agregarAlCarrito(prod)"
-                    class="min-w-[180px] p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-purple-400 cursor-pointer shrink-0 transition-all">
-                    <p class="text-xs font-bold text-slate-800 truncate">{{ prod.nombre }}</p>
-                    <p class="text-2xs text-slate-500 truncate">{{ prod.presentacion }}</p>
-                    <div class="flex justify-between items-center mt-1.5">
-                      <span class="text-xs font-black text-slate-900 font-mono">Q{{ prod.precioVenta | number:'1.2-2' }}</span>
-                      <span class="text-[10px] font-bold text-purple-600">+ Añadir</span>
-                    </div>
-                  </div>
+                @if (busquedaProducto().trim()) {
+                  <button
+                    type="button"
+                    (click)="busquedaProducto.set('')"
+                    class="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 cursor-pointer">
+                    <mat-icon class="text-sm">close</mat-icon>
+                  </button>
                 }
               </div>
+
+              <!-- Lista de Medicamentos: SOLO se muestra cuando el usuario escribe una búsqueda -->
+              @if (busquedaProducto().trim().length >= 1) {
+                <div class="max-h-52 overflow-y-auto space-y-1.5 p-1.5 bg-slate-50 rounded-xl border border-slate-200 pr-1">
+                  @for (prod of productosDisponibles(); track prod.productoId) {
+                    <div
+                      class="px-3 py-2 bg-white rounded-xl border border-slate-200 hover:border-purple-300 hover:bg-purple-50/40 transition-all flex items-center justify-between gap-3">
+                      
+                      <!-- Nombre y Presentación en una sola línea -->
+                      <div class="min-w-0 flex-1 flex items-center gap-2">
+                        <span class="text-sm font-bold text-slate-900 truncate">{{ prod.nombre }}</span>
+                        @if (prod.presentacion) {
+                          <span class="text-xs text-slate-500 font-normal truncate shrink-0">({{ prod.presentacion }})</span>
+                        }
+                      </div>
+
+                      <!-- Precio, Stock y Botón Añadir alineados a la derecha -->
+                      <div class="flex items-center gap-2.5 shrink-0">
+                        <span class="text-xs sm:text-sm font-black text-slate-900 font-mono">Q{{ prod.precioVenta | number:'1.2-2' }}</span>
+                        <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 whitespace-nowrap">
+                          Stock: {{ obtenerStockSucursal(prod, sucursalSeleccionadaId()) }} u.
+                        </span>
+                        <button
+                          type="button"
+                          (click)="agregarAlCarrito(prod)"
+                          class="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-bold rounded-lg text-[11px] transition-all flex items-center gap-0.5 shadow-2xs cursor-pointer">
+                          <mat-icon class="text-[11px] h-[11px] w-[11px] leading-none">add</mat-icon>
+                          <span>Añadir</span>
+                        </button>
+                      </div>
+                    </div>
+                  } @empty {
+                    <div class="py-4 text-center text-slate-400">
+                      <mat-icon class="text-xl text-slate-300 mx-auto block mb-1">search_off</mat-icon>
+                      <p class="text-xs font-medium">No se encontraron medicamentos con "{{ busquedaProducto() }}"</p>
+                    </div>
+                  }
+                </div>
+              }
             </div>
 
             <!-- Resumen y Confirmación -->
@@ -263,24 +454,50 @@
                 <span class="text-xs font-bold text-slate-500">{{ totalArticulos() }} artículos</span>
               </div>
 
-              <div class="max-h-48 overflow-y-auto space-y-2">
+              <div class="max-h-48 overflow-y-auto space-y-2 pr-1">
                 @for (item of carrito(); track item.productoId) {
-                  <div class="flex items-center justify-between text-xs p-2 bg-slate-50 rounded-xl">
-                    <div>
-                      <p class="font-bold text-slate-800">{{ item.nombre }}</p>
-                      <p class="text-2xs text-slate-500">{{ item.cantidad }} x Q{{ item.precioUnitario | number:'1.2-2' }}</p>
+                  <div class="flex items-center justify-between gap-2 text-xs p-2 bg-slate-50 hover:bg-slate-100/70 rounded-xl border border-slate-200 transition-all">
+                    <div class="min-w-0 flex-1">
+                      <p class="font-bold text-slate-800 truncate leading-tight">{{ item.nombre }}</p>
+                      <p class="text-2xs text-slate-500 mt-0.5">Q{{ item.precioUnitario | number:'1.2-2' }} c/u</p>
                     </div>
-                    <div class="flex items-center gap-3">
-                      <span class="font-bold text-slate-900 font-mono">Q{{ item.subtotal | number:'1.2-2' }}</span>
-                      <button (click)="eliminarDelCarrito(item.productoId)" class="text-slate-400 hover:text-rose-600">
+
+                    <!-- Controles de cantidad táctiles [-] [Qty] [+] -->
+                    <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5 shrink-0">
+                      <button
+                        type="button"
+                        (click)="decrementarCantidad(item)"
+                        class="w-5 h-5 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-purple-700 font-bold transition-colors cursor-pointer"
+                        matTooltip="Disminuir o quitar">
+                        <mat-icon class="text-[12px] h-[12px] w-[12px]">remove</mat-icon>
+                      </button>
+                      <span class="w-5 text-center font-bold font-mono text-slate-900 text-xs">{{ item.cantidad }}</span>
+                      <button
+                        type="button"
+                        (click)="incrementarCantidad(item)"
+                        class="w-5 h-5 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-purple-700 font-bold transition-colors cursor-pointer"
+                        matTooltip="Aumentar">
+                        <mat-icon class="text-[12px] h-[12px] w-[12px]">add</mat-icon>
+                      </button>
+                    </div>
+
+                    <div class="flex items-center gap-2 shrink-0">
+                      <span class="font-bold text-slate-900 font-mono min-w-[55px] text-right">Q{{ item.subtotal | number:'1.2-2' }}</span>
+                      <button
+                        type="button"
+                        (click)="eliminarDelCarrito(item.productoId)"
+                        class="text-slate-400 hover:text-rose-600 p-1 rounded hover:bg-rose-50 transition-colors cursor-pointer"
+                        matTooltip="Quitar de la orden">
                         <mat-icon class="text-xs">close</mat-icon>
                       </button>
                     </div>
                   </div>
                 } @empty {
-                  <p class="text-xs text-slate-400 text-center py-6">No hay medicamentos seleccionados</p>
+                  <p class="text-xs text-slate-400 text-center py-6">No hay medicamentos seleccionados en la orden</p>
                 }
               </div>
+
+
 
               <!-- Selector Forma de Pago -->
               <div>
@@ -311,18 +528,18 @@
                 </div>
               </div>
 
-              <!-- Botón Despachar -->
+              <!-- Botón Despachar (Abre verificación previa para cambiar datos antes de emitir) -->
               <button
                 type="button"
                 [disabled]="carrito().length === 0 || !clienteSeleccionado() || procesandoVenta()"
-                (click)="emitirPedidoCallCenter()"
-                class="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-lg shadow-purple-600/20 transition-all flex items-center justify-center gap-2">
+                (click)="iniciarConfirmacion()"
+                class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer">
                 @if (procesandoVenta()) {
                   <span class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                   <span>Confirmando Pedido y Asignando Ruta...</span>
                 } @else {
                   <mat-icon>delivery_dining</mat-icon>
-                  <span>Confirmar Pedido & Despachar a Ruta</span>
+                  <span>Verificar Despacho & Confirmar Pedido</span>
                 }
               </button>
             </div>
@@ -331,4 +548,319 @@
 
         </div>
 
+      
+  }
+
+
+  <!-- ================================================================================== -->
+  <!-- VISTA 2: BANDEJA CENTRALIZADA DE ÓRDENES WEB / PORTAL AUTOSERVICIO -->
+  <!-- ================================================================================== -->
+  @if (modoCallCenter() === 'WEB') {
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 sm:p-5 flex flex-col gap-4 animate-fade-in">
+      
+      <!-- Banner Informativo -->
+      <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
+            <mat-icon>language</mat-icon>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-800">Bandeja Centralizada de Pedidos Web</h3>
+            <p class="text-xs text-slate-500">
+              Órdenes realizadas en línea por pacientes para ser atendidas y despachadas desde el Call Center.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          (click)="simularPedidoWeb()"
+          class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition-all shrink-0 cursor-pointer">
+          <mat-icon class="text-sm">add_shopping_cart</mat-icon>
+          <span>+ Simular Llegada de Pedido Web</span>
+        </button>
       </div>
+
+      <!-- Tabla de Órdenes Web -->
+      <div class="overflow-x-auto rounded-xl border border-slate-200/80">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-2xs border-b border-slate-200">
+            <tr>
+              <th class="py-3 px-3.5">Nº Orden</th>
+              <th class="py-3 px-3.5">Fecha y Hora</th>
+              <th class="py-3 px-3.5">Canal</th>
+              <th class="py-3 px-3.5">Paciente</th>
+              <th class="py-3 px-3.5">Dirección de Entrega</th>
+              <th class="py-3 px-3.5 text-right">Total</th>
+              <th class="py-3 px-3.5 text-center">Estado</th>
+              <th class="py-3 px-3.5 text-center">Acciones Call Center</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (ord of ordenesWebPendientes(); track ord.pedidoId) {
+              <tr class="hover:bg-blue-50/40 transition-colors">
+                <td class="py-3 px-3.5 font-mono font-bold text-slate-800">#{{ ord.pedidoId }}</td>
+                <td class="py-3 px-3.5 text-slate-500 whitespace-nowrap">{{ ord.fechaPedido | date:'dd/MM/yy HH:mm' }}</td>
+                <td class="py-3 px-3.5">
+                  <span class="px-2 py-0.5 bg-blue-100 text-blue-800 font-bold rounded-full text-2xs">
+                    PORTAL WEB
+                  </span>
+                </td>
+                <td class="py-3 px-3.5 font-bold text-slate-800">{{ ord.cliente?.nombre }}</td>
+                <td class="py-3 px-3.5 text-slate-600">{{ ord.cliente?.direccion || 'A domicilio' }}</td>
+                <td class="py-3 px-3.5 text-right font-black text-slate-900 font-mono">Q{{ ord.total | number:'1.2-2' }}</td>
+                <td class="py-3 px-3.5 text-center">
+                  <span class="px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                    {{ ord.estado }}
+                  </span>
+                </td>
+                <td class="py-3 px-3.5 text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      (click)="verTicket(ord)"
+                      class="px-2.5 py-1 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg text-2xs font-bold border border-blue-200 transition-all flex items-center gap-1 cursor-pointer"
+                      matTooltip="Ver Detalle de la Orden">
+                      <mat-icon class="text-xs">visibility</mat-icon>
+                      <span>Ver Ticket</span>
+                    </button>
+                    <button
+                      type="button"
+                      (click)="abrirDespachoWeb(ord)"
+                      class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-2xs font-bold shadow-2xs transition-all flex items-center gap-1 cursor-pointer"
+                      matTooltip="Verificar y Asignar Farmacia de Despacho">
+                      <mat-icon class="text-xs">delivery_dining</mat-icon>
+                      <span>Confirmar y Despachar</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="8" class="py-12 text-center text-slate-400">
+                  <mat-icon class="text-4xl text-slate-300 mx-auto block mb-1">mark_email_read</mat-icon>
+                  <p class="text-sm font-bold text-slate-600">No hay pedidos web pendientes en la bandeja de entrada</p>
+                  <p class="text-xs text-slate-400 mt-1">Todos los pedidos recibidos por internet han sido atendidos.</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  }
+
+
+
+  <!-- MODAL 1: VERIFICACIÓN Y CONFIRMACIÓN DE DESPACHO EN LLAMADA -->
+  @if (mostrarConfirmacion()) {
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-5 animate-fade-in">
+      <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-scale-up">
+        
+        <!-- Header -->
+        <div class="p-4 sm:p-5 bg-white border-b border-slate-200 text-slate-800 flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center">
+              <mat-icon class="text-xl">fact_check</mat-icon>
+            </div>
+            <div>
+              <h3 class="text-base font-black text-slate-900">Verificar y Confirmar Despacho</h3>
+              <p class="text-xs text-slate-500">Puedes revisar o cambiar la farmacia antes de emitir el pedido</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            (click)="cerrarConfirmacion()"
+            class="w-8 h-8 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-all cursor-pointer">
+            <mat-icon class="text-base">close</mat-icon>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-5 space-y-4 overflow-y-auto flex-1">
+          
+          <!-- Datos del Paciente -->
+          <div class="p-3.5 bg-purple-50 rounded-2xl border border-purple-200 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-bold text-purple-700 uppercase">Paciente en Llamada</span>
+              <h4 class="text-sm font-black text-slate-800 mt-0.5">
+                {{ clienteSeleccionado()?.nombre }} {{ clienteSeleccionado()?.apellido }}
+              </h4>
+              <p class="text-xs text-slate-600 mt-0.5">📞 {{ telefonoEntrega() || clienteSeleccionado()?.telefono }}</p>
+            </div>
+            <span class="px-2 py-1 bg-purple-200 text-purple-900 font-extrabold rounded-lg text-2xs">
+              IDENTIFICADO
+            </span>
+          </div>
+
+          <!-- Destino de Entrega -->
+          <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
+            <span class="text-[10px] font-bold text-slate-500 uppercase">Dirección de Entrega a Domicilio</span>
+            <p class="text-xs font-bold text-slate-800 flex items-start gap-1.5 mt-0.5">
+              <mat-icon class="text-sm text-purple-600 shrink-0 mt-0.5">location_on</mat-icon>
+              <span>{{ direccionEntrega() }}</span>
+            </p>
+            @if (referenciaEntrega()) {
+              <p class="text-2xs text-slate-500 italic pl-5">Punto de referencia: {{ referenciaEntrega() }}</p>
+            }
+          </div>
+
+          <!-- Farmacia que Despacha (¡CAMBIABLE AQUÍ ANTES DE CONFIRMAR!) -->
+          <div class="p-3.5 bg-amber-50/60 rounded-2xl border border-amber-200/80 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label class="block text-2xs font-extrabold text-amber-900 uppercase">
+                🏢 Farmacia que Despachará (Puedes cambiarla aquí si deseas):
+              </label>
+            </div>
+            <select
+              [ngModel]="sucursalSeleccionadaId()"
+              (ngModelChange)="cambiarSucursal($event)"
+              class="w-full px-3 py-2 bg-white border border-amber-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer">
+              @for (s of sucursales; track s.id) {
+                <option [value]="s.id" [disabled]="!sucursalTieneStockParaCarrito(s.id)">
+                  {{ s.nombre }} {{ sucursalTieneStockParaCarrito(s.id) ? '(✓ Disponible)' : '(⛔ Sin Stock)' }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <!-- Forma de Pago -->
+          <div class="space-y-1">
+            <label class="block text-2xs font-bold text-slate-700 uppercase">
+              Forma de Pago Acordada con el Cliente:
+            </label>
+            <select
+              [ngModel]="metodoPagoSeleccionadoId()"
+              (ngModelChange)="metodoPagoSeleccionadoId.set($event)"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800">
+              @for (m of pedidosService.metodosPago(); track m.metodoPagoId) {
+                <option [value]="m.metodoPagoId">{{ m.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Medicamentos -->
+          <div class="border-t border-slate-100 pt-3 space-y-1.5">
+            <div class="flex items-center justify-between text-2xs font-bold text-slate-500 uppercase">
+              <span>Medicamentos en la Orden:</span>
+              <span>{{ totalArticulos() }} artículos</span>
+            </div>
+            <div class="max-h-36 overflow-y-auto space-y-1">
+              @for (item of carrito(); track item.productoId) {
+                <div class="flex items-center justify-between text-xs py-1.5 px-2.5 bg-slate-50 rounded-xl">
+                  <span class="font-medium text-slate-800">{{ item.cantidad }}x {{ item.nombre }}</span>
+                  <span class="font-mono font-bold text-slate-900">Q{{ item.subtotal | number:'1.2-2' }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Total a Cobrar -->
+          <div class="flex items-center justify-between p-3.5 bg-purple-50 rounded-2xl border border-purple-200">
+            <div>
+              <span class="text-[10px] font-black uppercase text-purple-700 block">Total a Cobrar al Cliente:</span>
+              <span class="text-2xs text-emerald-700 font-bold">✓ Envío Express Incluido (GRATIS)</span>
+            </div>
+            <span class="text-xl font-black text-purple-900 font-mono">Q{{ totalVenta() | number:'1.2-2' }}</span>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 shrink-0">
+          <button
+            type="button"
+            (click)="cerrarConfirmacion()"
+            class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer">
+            ✕ Modificar / Volver
+          </button>
+
+          <button
+            type="button"
+            [disabled]="procesandoVenta()"
+            (click)="confirmarYEmitir()"
+            class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-2 cursor-pointer">
+            @if (procesandoVenta()) {
+              <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+              <span>Emitiendo Pedido...</span>
+            } @else {
+              <mat-icon class="text-sm">delivery_dining</mat-icon>
+              <span>Confirmar y Despachar a Ruta</span>
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- MODAL 2: CONFIRMACIÓN Y ELECCIÓN DE SUCURSAL PARA PEDIDO WEB -->
+  @if (ordenWebParaDespacho(); as ordWeb) {
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-5 animate-fade-in">
+      <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden animate-scale-up">
+        
+        <div class="p-4 bg-white border-b border-slate-200 text-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-sky-50 text-sky-700 border border-sky-200 flex items-center justify-center">
+              <mat-icon class="text-base">local_shipping</mat-icon>
+            </div>
+            <div>
+              <h3 class="text-sm font-black text-slate-900">Despacho de Pedido Web #{{ ordWeb.pedidoId }}</h3>
+              <p class="text-2xs text-slate-500">Selecciona o cambia la farmacia antes de enviar a ruta</p>
+            </div>
+          </div>
+          <button (click)="cerrarDespachoWeb()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center cursor-pointer">
+            <mat-icon class="text-sm">close</mat-icon>
+          </button>
+        </div>
+
+        <div class="p-5 space-y-3.5 text-xs">
+          <div class="p-3 bg-blue-50/60 rounded-xl border border-blue-200">
+            <span class="text-[10px] font-bold text-blue-700 uppercase">Paciente en Web:</span>
+            <p class="font-bold text-slate-900 text-sm mt-0.5">{{ ordWeb.cliente?.nombre }}</p>
+            <p class="text-slate-600 mt-0.5">📞 {{ ordWeb.cliente?.telefono || 'N/D' }} &bull; 📍 {{ ordWeb.cliente?.direccion || 'A domicilio' }}</p>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="block text-2xs font-extrabold text-slate-800 uppercase">
+              🏢 Farmacia que Despachará este Pedido Web (Puedes cambiarla aquí):
+            </label>
+            <select
+              [ngModel]="sucursalSeleccionadaId()"
+              (ngModelChange)="cambiarSucursal($event)"
+              class="w-full px-3 py-2 bg-blue-50/40 border border-blue-300 rounded-xl font-bold text-blue-950 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+              @for (s of sucursales; track s.id) {
+                <option [value]="s.id">{{ s.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="font-bold text-slate-700">Total a Cobrar:</span>
+            <span class="font-black text-slate-900 font-mono text-base">Q{{ ordWeb.total | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            (click)="cerrarDespachoWeb()"
+            class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">
+            ✕ Cancelar
+          </button>
+
+          <button
+            type="button"
+            (click)="confirmarDespachoWeb()"
+            class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer">
+            <mat-icon class="text-sm">delivery_dining</mat-icon>
+            <span>Confirmar y Despachar a Ruta</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+</div>

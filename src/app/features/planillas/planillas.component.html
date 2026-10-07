@@ -1,0 +1,261 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+  <!-- Encabezado RUP CUN-07 -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+    <div>
+      <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">Nómina y Gestión de Planillas</h2>
+      <p class="text-xs text-slate-500 mt-0.5">
+        Cálculo automatizado de sueldos, retención legal IGSS (4.83%), bonificación incentivo y emisión de boletas.
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      @if (isSuperAdmin()) {
+        <button
+          type="button"
+          (click)="abrirModalGenerar()"
+          class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs inline-flex items-center gap-2 transition-colors cursor-pointer shadow-xs"
+        >
+          <mat-icon class="!text-sm !w-4 !h-4">add</mat-icon>
+          <span>Generar Planilla</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Pestañas de Navegación -->
+  <div class="flex items-center gap-2 border-b border-slate-200">
+    <button
+      type="button"
+      (click)="setTab('PLANILLAS')"
+      class="px-4 py-2.5 text-xs font-bold transition-colors border-b-2 cursor-pointer inline-flex items-center gap-2"
+      [ngClass]="activeTab() === 'PLANILLAS' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-800'"
+    >
+      <mat-icon class="!text-sm !w-4 !h-4">receipt_long</mat-icon>
+      <span>Historial de Planillas</span>
+    </button>
+    <button
+      type="button"
+      (click)="setTab('COLABORADORES')"
+      class="px-4 py-2.5 text-xs font-bold transition-colors border-b-2 cursor-pointer inline-flex items-center gap-2"
+      [ngClass]="activeTab() === 'COLABORADORES' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-800'"
+    >
+      <mat-icon class="!text-sm !w-4 !h-4">badge</mat-icon>
+      <span>Padrón de Colaboradores</span>
+    </button>
+  </div>
+
+  @if (activeTab() === 'PLANILLAS') {
+    <!-- KPIs Ejecutivos -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center gap-3.5">
+        <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-black shrink-0">
+          <mat-icon class="!text-xl !w-5 !h-5">attach_money</mat-icon>
+        </div>
+        <div>
+          <span class="text-3xs font-bold uppercase tracking-wider text-slate-400 block">Total de Planillas</span>
+          <span class="text-lg sm:text-xl font-black text-slate-900">{{ planillasService.kpiTotalPlanillas() }}</span>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center gap-3.5">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black shrink-0">
+          <mat-icon class="!text-xl !w-5 !h-5">check_circle</mat-icon>
+        </div>
+        <div>
+          <span class="text-3xs font-bold uppercase tracking-wider text-emerald-600 block">Planillas Pagadas</span>
+          <span class="text-lg sm:text-xl font-black text-emerald-700">{{ planillasService.kpiPlanillasPagadas() }}</span>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center gap-3.5">
+        <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-black shrink-0">
+          <mat-icon class="!text-xl !w-5 !h-5">people</mat-icon>
+        </div>
+        <div>
+          <span class="text-3xs font-bold uppercase tracking-wider text-sky-600 block">Colaboradores en Nómina</span>
+          <span class="text-lg sm:text-xl font-black text-sky-700">{{ planillasService.kpiColaboradoresActivos() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de Planillas con Cero Parpadeo -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex flex-col">
+      @if (planillasService.loading()) {
+        <div class="absolute top-0 left-0 right-0 z-20">
+          <mat-progress-bar mode="indeterminate" class="!h-1"></mat-progress-bar>
+        </div>
+      }
+
+      <div [class.opacity-60]="planillasService.loading()" class="transition-opacity duration-200 overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50/50">
+              <th class="py-3 px-4 text-3xs font-semibold uppercase text-slate-500">NO.</th>
+              <th class="py-3 px-4 text-3xs font-semibold uppercase text-slate-500">PERÍODO</th>
+              <th class="py-3 px-4 text-3xs font-semibold uppercase text-slate-500">ALCANCE / SEDE</th>
+              <th class="py-3 px-4 text-center text-3xs font-semibold uppercase text-slate-500">COLABORADORES</th>
+              <th class="py-3 px-4 text-right text-3xs font-semibold uppercase text-slate-500">TOTAL BRUTO</th>
+              <th class="py-3 px-4 text-right text-3xs font-semibold uppercase text-slate-500">DESCUENTOS IGSS</th>
+              <th class="py-3 px-4 text-right text-3xs font-semibold uppercase text-slate-500">TOTAL NETO</th>
+              <th class="py-3 px-4 text-center text-3xs font-semibold uppercase text-slate-500">ESTADO</th>
+              <th class="py-3 px-4 text-right text-3xs font-semibold uppercase text-slate-500">ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (p of planillasService.planillas(); track p.planillaId) {
+              <tr class="hover:bg-slate-50/70 transition-colors">
+                <td class="py-3 px-4 font-mono font-bold text-slate-700">{{ p.planillaId }}</td>
+                <td class="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap">
+                  {{ p.fechaInicio | date:'mediumDate' }} - {{ p.fechaFin | date:'mediumDate' }}
+                </td>
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <span
+                    class="text-3xs font-extrabold px-2.5 py-0.5 rounded-full border inline-block"
+                    [ngClass]="p.sucursalId ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-purple-50 text-purple-700 border-purple-200'"
+                  >
+                    {{ p.sucursalId ? (p.sucursalNombre || 'Sede Local') : '🏢 Consolidada' }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-center font-bold text-slate-700">{{ p.totalColaboradores }}</td>
+                <td class="py-3 px-4 text-right font-semibold text-slate-700 whitespace-nowrap">Q {{ p.totalBruto.toFixed(2) }}</td>
+                <td class="py-3 px-4 text-right font-semibold text-rose-700 whitespace-nowrap">-Q {{ p.totalDescuentos.toFixed(2) }}</td>
+                <td class="py-3 px-4 text-right font-black text-emerald-700 whitespace-nowrap">Q {{ p.totalNeto.toFixed(2) }}</td>
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <span
+                    class="text-3xs font-extrabold px-2.5 py-0.5 rounded-full border inline-block"
+                    [ngClass]="p.estado === 'PAGADA' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'"
+                  >
+                    {{ p.estado | formatEnum }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-right whitespace-nowrap">
+                  <button
+                    type="button"
+                    (click)="verDetalle(p)"
+                    class="px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold text-xs cursor-pointer inline-flex items-center gap-1 transition-colors shadow-2xs"
+                  >
+                    <mat-icon class="!text-xs !w-3.5 !h-3.5 text-slate-500">visibility</mat-icon>
+                    <span>Boletas</span>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="9" class="py-12 text-center text-slate-400">
+                  <mat-icon class="!text-3xl !w-8 !h-8 text-slate-300 mx-auto mb-1">payments</mat-icon>
+                  <p class="text-xs font-semibold">No se han generado planillas aún.</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="border-t border-slate-100 bg-white">
+        <mat-paginator
+          [length]="planillasService.totalItems()"
+          [pageSize]="planillasService.pageSize()"
+          [pageSizeOptions]="[10, 20]"
+          (page)="onPageChange($event)"
+        ></mat-paginator>
+      </div>
+    </div>
+  } @else {
+    <!-- Directorio de Colaboradores -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="p-4 border-b border-slate-100 bg-slate-50/40 flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">Padrón de Empleados y Puestos</h3>
+          <span class="text-2xs text-slate-400">Total registrados: {{ planillasService.empleados().length }}</span>
+        </div>
+        <button
+          type="button"
+          (click)="abrirNuevoColaborador()"
+          class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+        >
+          <mat-icon class="!text-sm !w-4 !h-4">person_add</mat-icon>
+          <span>+ Nuevo Colaborador</span>
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50/50">
+              <th class="py-3 px-4 text-3xs font-semibold uppercase text-slate-500">NO.</th>
+              <th class="py-3 px-4 text-3xs font-semibold uppercase text-slate-500">COLABORADOR</th>
+              <th class="py-3 px-4 text-3xs font-semibold uppercase text-slate-500">DPI</th>
+              <th class="py-3 px-4 text-3xs font-semibold uppercase text-slate-500">PUESTO</th>
+              <th class="py-3 px-4 text-3xs font-semibold uppercase text-slate-500">SUCURSAL</th>
+              <th class="py-3 px-4 text-3xs font-semibold uppercase text-slate-500">TELÉFONO</th>
+              <th class="py-3 px-4 text-right text-3xs font-semibold uppercase text-slate-500">SALARIO BASE</th>
+              <th class="py-3 px-4 text-center text-3xs font-semibold uppercase text-slate-500">ESTADO</th>
+              <th class="py-3 px-4 text-right text-3xs font-semibold uppercase text-slate-500">ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (e of planillasService.empleados(); track e.empleadoId) {
+              <tr class="hover:bg-slate-50/70 transition-colors">
+                <td class="py-3 px-4 font-mono font-bold text-slate-700">{{ e.empleadoId }}</td>
+                <td class="py-3 px-4 font-bold text-slate-900">{{ e.nombreCompleto }}</td>
+                <td class="py-3 px-4 font-mono text-slate-500">{{ e.dpi }}</td>
+                <td class="py-3 px-4 font-semibold text-slate-800">{{ e.puesto }}</td>
+                <td class="py-3 px-4 text-slate-600">{{ e.sucursal }}</td>
+                <td class="py-3 px-4 text-slate-500">{{ e.telefono }}</td>
+                <td class="py-3 px-4 text-right font-black text-slate-800">Q {{ e.salarioActual.toFixed(2) }}</td>
+                <td class="py-3 px-4 text-center">
+                  <span
+                    class="text-3xs font-extrabold px-2.5 py-0.5 rounded-full border inline-block"
+                    [ngClass]="e.estado === 'ACTIVO' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'"
+                  >
+                    {{ e.estado | formatEnum }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-right whitespace-nowrap">
+                  <div class="inline-flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      (click)="editarColaborador(e)"
+                      matTooltip="Editar datos y salario"
+                      class="px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold text-xs cursor-pointer inline-flex items-center gap-1 transition-colors shadow-2xs"
+                    >
+                      <mat-icon class="!text-xs !w-3.5 !h-3.5 text-slate-500">edit</mat-icon>
+                      <span>Editar</span>
+                    </button>
+                    @if (e.estado === 'ACTIVO') {
+                      <button
+                        type="button"
+                        (click)="cambiarEstado(e)"
+                        matTooltip="Dar de baja laboral"
+                        class="px-2.5 py-1 rounded-lg border border-rose-200 bg-rose-50/50 hover:bg-rose-100 text-rose-700 font-semibold text-xs cursor-pointer inline-flex items-center gap-1 transition-colors shadow-2xs"
+                      >
+                        <mat-icon class="!text-xs !w-3.5 !h-3.5 text-rose-500">person_off</mat-icon>
+                        <span>Baja</span>
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        (click)="cambiarEstado(e)"
+                        matTooltip="Reactivar colaborador"
+                        class="px-2.5 py-1 rounded-lg border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs cursor-pointer inline-flex items-center gap-1 transition-colors shadow-2xs"
+                      >
+                        <mat-icon class="!text-xs !w-3.5 !h-3.5 text-emerald-500">person</mat-icon>
+                        <span>Reactivar</span>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="9" class="py-12 text-center text-slate-400">
+                  <mat-icon class="!text-3xl !w-8 !h-8 text-slate-300 mx-auto mb-1">people_outline</mat-icon>
+                  <p class="text-xs font-semibold">No hay colaboradores registrados en el sistema.</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,303 @@
+<div class="p-6 max-w-[1600px] mx-auto space-y-5 text-slate-800">
+
+  <!-- Encabezado Limpio y Formal -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">Gestión de Usuarios</h2>
+      <p class="text-xs text-slate-500 mt-0.5">Control de colaboradores, roles del sistema y seguridad de acceso.</p>
+    </div>
+
+    <!-- Botón de Creación -->
+    @if (isSuperAdmin()) {
+      <button
+        type="button"
+        (click)="abrirCrearUsuario()"
+      class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
+    >
+      <mat-icon class="!w-4 !h-4 !text-base">person_add</mat-icon>
+      <span>Nuevo Usuario</span>
+      </button>
+    }
+  </div>
+
+  <!-- KPIs Interactivos (Actúan como Filtros Rápidos) -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <!-- Total Colaboradores -->
+    <div
+      (click)="filtrarPorKpi('TODOS')"
+      [class.border-slate-800]="selectedKpiFiltro === 'TODOS'"
+      [class.border-2]="selectedKpiFiltro === 'TODOS'"
+      class="bg-white p-3.5 rounded-2xl border border-slate-200 hover:border-slate-300 shadow-xs cursor-pointer transition-all flex items-center gap-3"
+    >
+      <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+        <mat-icon class="!text-lg !w-5 !h-5">group</mat-icon>
+      </div>
+      <div>
+        <div class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Total Usuarios</div>
+        <div class="text-lg font-black text-slate-800">{{ usersService.kpiTotal() }}</div>
+      </div>
+    </div>
+
+    <!-- Usuarios Activos -->
+    <div
+      (click)="filtrarPorKpi('ACTIVOS')"
+      [class.border-emerald-500]="selectedKpiFiltro === 'ACTIVOS'"
+      [class.border-2]="selectedKpiFiltro === 'ACTIVOS'"
+      class="bg-white p-3.5 rounded-2xl border border-slate-200 hover:border-slate-300 shadow-xs cursor-pointer transition-all flex items-center gap-3"
+    >
+      <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+        <mat-icon class="!text-lg !w-5 !h-5">check_circle</mat-icon>
+      </div>
+      <div>
+        <div class="text-2xs font-bold text-emerald-600 uppercase tracking-wider">Activos</div>
+        <div class="text-lg font-black text-slate-800">{{ usersService.kpiActivos() }}</div>
+      </div>
+    </div>
+
+    <!-- Administradores -->
+    <div
+      (click)="filtrarPorKpi('SUPER_ADMIN')"
+      [class.border-purple-500]="selectedKpiFiltro === 'SUPER_ADMIN'"
+      [class.border-2]="selectedKpiFiltro === 'SUPER_ADMIN'"
+      class="bg-white p-3.5 rounded-2xl border border-slate-200 hover:border-slate-300 shadow-xs cursor-pointer transition-all flex items-center gap-3"
+    >
+      <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center shrink-0">
+        <mat-icon class="!text-lg !w-5 !h-5">admin_panel_settings</mat-icon>
+      </div>
+      <div>
+        <div class="text-2xs font-bold text-purple-600 uppercase tracking-wider">Administradores</div>
+        <div class="text-lg font-black text-slate-800">{{ usersService.kpiSuperAdmins() }}</div>
+      </div>
+    </div>
+
+    <!-- Cuentas Inactivas -->
+    <div
+      (click)="filtrarPorKpi('INACTIVOS')"
+      [class.border-rose-500]="selectedKpiFiltro === 'INACTIVOS'"
+      [class.border-2]="selectedKpiFiltro === 'INACTIVOS'"
+      class="bg-white p-3.5 rounded-2xl border border-slate-200 hover:border-slate-300 shadow-xs cursor-pointer transition-all flex items-center gap-3"
+    >
+      <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center shrink-0">
+        <mat-icon class="!text-lg !w-5 !h-5">person_off</mat-icon>
+      </div>
+      <div>
+        <div class="text-2xs font-bold text-rose-600 uppercase tracking-wider">Inactivos</div>
+        <div class="text-lg font-black text-slate-800">{{ usersService.kpiInactivos() }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor Principal: Filtros y Tabla -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden relative">
+
+    <!-- Barra de Progreso Discreta (Cero Parpadeo) -->
+    @if (usersService.loading()) {
+      <div class="absolute top-0 left-0 right-0 z-10">
+        <mat-progress-bar mode="indeterminate" class="!h-1"></mat-progress-bar>
+      </div>
+    }
+
+    <!-- Barra de Filtros Simple en Una Sola Línea -->
+    <div class="p-3.5 border-b border-slate-100 bg-slate-50/50 flex flex-wrap items-center gap-2.5">
+      <!-- Buscador Compacto -->
+      <div class="relative flex-1 min-w-[220px]">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+          <mat-icon class="!text-base !w-4 !h-4">search</mat-icon>
+        </span>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (input)="onSearchChange()"
+          placeholder="Buscar colaborador por nombre, @usuario o DPI..."
+          class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+        />
+      </div>
+
+      <!-- Selector de Rol -->
+      <div class="w-44">
+        <select
+          [(ngModel)]="selectedRolId"
+          (change)="onFilterChange()"
+          class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-600"
+        >
+          <option value="">Todos los Roles</option>
+          @for (r of roles(); track r.rolId) {
+            <option [value]="r.rolId">{{ r.nombre | formatEnum }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Selector de Sucursal -->
+      <div class="w-52">
+        <select
+          [(ngModel)]="selectedSucursalId"
+          (change)="onFilterChange()"
+          class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-600"
+        >
+          <option value="">Todas las Sucursales</option>
+          @for (s of sucursales(); track s.sucursalId) {
+            <option [value]="s.sucursalId">{{ s.nombre }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <!-- Tabla Principal (5 Columnas Limpias) -->
+    <div
+      class="overflow-x-auto transition-opacity duration-200"
+      [class.opacity-60]="usersService.loading()"
+    >
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="bg-slate-50/70 border-b border-slate-200">
+          <tr>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">COLABORADOR</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">ROL</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">SUCURSAL</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500 text-center">ESTADO</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500 text-right">ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @if (usersService.usuarios().length === 0 && !usersService.loading()) {
+            <tr>
+              <td colspan="5" class="py-12 text-center text-slate-400">
+                <mat-icon class="!w-10 !h-10 !text-4xl text-slate-300 mx-auto mb-2">person_search</mat-icon>
+                <p class="font-semibold text-xs">No se encontraron colaboradores registrados con los filtros aplicados.</p>
+              </td>
+            </tr>
+          } @else {
+            @for (u of usersService.usuarios(); track u.credencialId) {
+              <tr class="hover:bg-slate-50/70 transition-colors">
+                
+                <!-- 1. COLABORADOR -->
+                <td class="py-3.5 px-4">
+                  <div class="flex items-center gap-2">
+                    <span class="font-semibold text-slate-800 text-sm">{{ u.nombreCompleto }}</span>
+                    @if (isCurrentUser(u)) {
+                      <span class="text-3xs font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        Tú
+                      </span>
+                    }
+                  </div>
+                </td>
+
+                <!-- 2. ROL -->
+                <td class="py-3.5 px-4 whitespace-nowrap">
+                  <span
+                    class="text-2xs font-extrabold rounded-full px-2.5 py-0.5 border inline-flex items-center gap-1"
+                    [ngClass]="{
+                      'bg-purple-50 text-purple-700 border-purple-200': u.rolNombre === 'SUPER_ADMIN',
+                      'bg-sky-50 text-sky-700 border-sky-200': u.rolNombre === 'GERENTE_SUCURSAL',
+                      'bg-emerald-50 text-emerald-700 border-emerald-200': u.rolNombre === 'CAJERO',
+                      'bg-amber-50 text-amber-700 border-amber-200': u.rolNombre === 'CALL_CENTER',
+                      'bg-slate-100 text-slate-700 border-slate-300': u.rolNombre === 'AUDITOR'
+                    }"
+                  >
+                    <mat-icon class="!text-xs !w-3 !h-3">security</mat-icon>
+                    <span>{{ u.rolNombre | formatEnum }}</span>
+                  </span>
+                </td>
+
+                <!-- 3. SUCURSAL -->
+                <td class="py-3.5 px-4 text-slate-600 font-medium whitespace-nowrap">
+                  <span class="inline-flex items-center gap-1.5">
+                    <mat-icon class="!w-3.5 !h-3.5 !text-xs text-emerald-600">storefront</mat-icon>
+                    <span>{{ u.sucursalNombre }}</span>
+                  </span>
+                </td>
+
+                <!-- 4. ESTADO -->
+                <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                  @if (u.estado === 'ACTIVO') {
+                    <span class="text-2xs font-extrabold rounded-full px-2.5 py-0.5 border bg-emerald-50 text-emerald-700 border-emerald-200">
+                      Activo
+                    </span>
+                  } @else {
+                    <span class="text-2xs font-extrabold rounded-full px-2.5 py-0.5 border bg-rose-50 text-rose-700 border-rose-200">
+                      Inactivo
+                    </span>
+                  }
+                </td>
+
+                <!-- 5. ACCIONES (Detalle, Editar y Desactivar/Reactivar) -->
+                <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                  <div class="inline-flex items-center justify-end gap-1.5">
+                    <!-- [ 👁 Detalle ] -->
+                    <button
+                      type="button"
+                      (click)="abrirDetalleUsuario(u)"
+                      class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold text-xs cursor-pointer inline-flex items-center gap-1.5 transition-colors shadow-2xs"
+                      title="Ver ficha completa"
+                    >
+                      <mat-icon class="!text-sm !w-4 !h-4 text-slate-500">visibility</mat-icon>
+                      <span>Detalle</span>
+                    </button>
+
+                    <!-- [ ✎ Editar ] -->
+                    @if (isSuperAdmin()) {
+                      <button
+                        type="button"
+                        (click)="abrirEditarUsuario(u)"
+                      class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold text-xs cursor-pointer inline-flex items-center gap-1.5 transition-colors shadow-2xs"
+                      [title]="isCurrentUser(u) ? 'Editar mis datos o contraseña' : 'Editar usuario'"
+                    >
+                      <mat-icon class="!text-sm !w-4 !h-4 text-slate-500">edit</mat-icon>
+                      <span>Editar</span>
+                      </button>
+                    }
+
+                    <!-- [ 🚫 Desactivar / Reactivar / Protegido ] -->
+                    @if (isSuperAdmin()) {
+                      @if (isCurrentUser(u)) {
+                      <span
+                        class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 font-semibold text-xs inline-flex items-center gap-1 cursor-not-allowed select-none"
+                        title="Tu propia cuenta está protegida contra auto-desactivación"
+                      >
+                        <mat-icon class="!text-xs !w-3.5 !h-3.5 text-slate-400">lock</mat-icon>
+                        <span>Protegido</span>
+                      </span>
+                    } @else {
+                      @if (u.estado === 'ACTIVO') {
+                        <button
+                          type="button"
+                          (click)="desactivarUsuario(u)"
+                          class="px-2.5 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-xs cursor-pointer inline-flex items-center gap-1.5 transition-colors shadow-2xs"
+                          title="Desactivar acceso"
+                        >
+                          <mat-icon class="!text-sm !w-4 !h-4 text-rose-600">block</mat-icon>
+                          <span>Desactivar</span>
+                        </button>
+                      } @else {
+                        <button
+                          type="button"
+                          (click)="desactivarUsuario(u)"
+                          class="px-2.5 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs cursor-pointer inline-flex items-center gap-1.5 transition-colors shadow-2xs"
+                          title="Reactivar acceso"
+                        >
+                          <mat-icon class="!text-sm !w-4 !h-4 text-emerald-600">check_circle</mat-icon>
+                          <span>Reactivar</span>
+                        </button>
+                      }
+                    }
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginador Siempre Anclado al Pie -->
+    <div class="border-t border-slate-100 bg-white">
+      <mat-paginator
+        [length]="usersService.totalItems()"
+        [pageSize]="usersService.pageSize()"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+      ></mat-paginator>
+    </div>
+  </div>
+
+</div>

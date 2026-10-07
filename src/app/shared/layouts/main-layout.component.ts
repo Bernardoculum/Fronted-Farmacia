@@ -1,12 +1,14 @@
-import { Component, inject } from '@angular/core';
+﻿import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatBadgeModule } from '@angular/material/badge';
 import { AuthService } from '../../core/services/auth.service';
+import { LayoutService } from '../../core/services/layout.service';
 import { Role } from '../../core/enums/role.enum';
 
 @Component({
@@ -20,12 +22,15 @@ import { Role } from '../../core/enums/role.enum';
     MatTooltipModule,
     MatMenuModule,
     MatDividerModule,
+    MatBadgeModule,
   ],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss'],
 })
 export class MainLayoutComponent {
   readonly authService = inject(AuthService);
+  readonly layoutService = inject(LayoutService);
+  private readonly router = inject(Router);
 
   /**
    * Nombre de rol amigable y estandarizado para toda la app.
@@ -54,7 +59,7 @@ export class MainLayoutComponent {
   }
 
   /**
-   * Obtiene el nombre del usuario sin prefijos como "Super".
+   * Obtiene el nombre del usuario sin prefijos como Super.
    */
   getUserDisplayName(): string {
     const u = this.authService.currentUser();
@@ -85,7 +90,7 @@ export class MainLayoutComponent {
     if ((u as any)?.sucursal?.nombre) {
       return (u as any).sucursal.nombre;
     }
-    return (u as any)?.sucursalNombre || 'Sucursal Zona 10 Centro';
+    return (u as any)?.sucursalNombre || 'Sucursal Central (Atanasio Tzul Z.12)';
   }
 
   /**
@@ -112,5 +117,13 @@ export class MainLayoutComponent {
       default:
         return 'bg-teal-50 text-teal-700 border-teal-200';
     }
+  }
+
+  /**
+   * Navega a la sección de Proveedores en Clientes (pestaña laboratorios).
+   */
+  irAProveedores(): void {
+    this.router.navigate(['/clientes'], { queryParams: { tab: 'laboratorios' } });
+    this.layoutService.closeMobile();
   }
 }

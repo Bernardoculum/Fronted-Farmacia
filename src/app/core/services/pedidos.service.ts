@@ -151,8 +151,14 @@ export class PedidosService {
 
     this.http.get<any>(this.baseUrl, { params }).subscribe({
       next: (res) => {
-        const items = res?.data || (Array.isArray(res) ? res : []);
-        this.pedidos.set(items);
+        const raw = res?.data || (Array.isArray(res) ? res : []);
+        const normalized = raw.map((p: any) => ({
+          ...p,
+          sucursal: typeof p.sucursal === 'string'
+            ? { sucursalId: p.sucursalId || 1, nombre: p.sucursal }
+            : (p.sucursal || { sucursalId: p.sucursalId || 1, nombre: 'Sucursal Central (Zona 10)' }),
+        }));
+        this.pedidos.set(normalized);
         this.loading.set(false);
       },
       error: (err) => {

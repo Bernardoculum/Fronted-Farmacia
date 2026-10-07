@@ -8,11 +8,6 @@ export const PEDIDOS_ROUTES: Routes = [
     loadComponent: () => import('./pedidos.component').then((m) => m.PedidosComponent),
     children: [
       {
-        path: '',
-        pathMatch: 'full',
-        redirectTo: 'pos',
-      },
-      {
         path: 'pos',
         loadComponent: () => import('./pages/pos/pos.component').then((m) => m.PosComponent),
         canActivate: [roleGuard([Role.SUPER_ADMIN, Role.GERENTE_SUCURSAL, Role.CAJERO])],
@@ -23,14 +18,21 @@ export const PEDIDOS_ROUTES: Routes = [
         canActivate: [roleGuard([Role.SUPER_ADMIN, Role.CALL_CENTER])],
       },
       {
-        path: 'web',
+        path: 'ordenes-web',
         loadComponent: () => import('./pages/ordenes-web/ordenes-web.component').then((m) => m.OrdenesWebComponent),
         canActivate: [roleGuard([Role.SUPER_ADMIN, Role.GERENTE_SUCURSAL, Role.CALL_CENTER])],
       },
       {
         path: 'historial',
         loadComponent: () => import('./pages/historial/historial.component').then((m) => m.HistorialComponent),
-        canActivate: [roleGuard([Role.SUPER_ADMIN, Role.GERENTE_SUCURSAL, Role.AUDITOR, Role.CAJERO, Role.CALL_CENTER])],
+        canActivate: [
+          roleGuard([Role.SUPER_ADMIN, Role.GERENTE_SUCURSAL, Role.AUDITOR, Role.CAJERO, Role.CALL_CENTER]),
+        ],
+      },
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'pos',
       },
     ],
   },

@@ -1,0 +1,299 @@
+<div class="p-6 max-w-7xl mx-auto space-y-5">
+  <!-- Cabecera Formal Limpia -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+    <div>
+      <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">Bitácora Forense de Seguridad y Auditoría</h2>
+      <p class="text-xs text-slate-500 mt-0.5">
+        Registro inmutable de accesos, intentos fallidos, modificaciones DML y ajustes con identificación de operador e IP origen.
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        (click)="imprimirBitacora()"
+        class="px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+        title="Imprimir reporte de eventos según los filtros seleccionados"
+      >
+        <mat-icon class="!text-sm !w-4 !h-4 text-slate-500">print</mat-icon>
+        <span>Imprimir Bitácora</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- KPIs de Eventos (Tarjetas Métricas / Filtros Clicables) -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+    <div
+      (click)="filtrarPorOperacion('TODAS')"
+      class="bg-white rounded-2xl p-3 cursor-pointer transition-all duration-200"
+      [ngClass]="filtroOperacion() === 'TODAS' ? 'border-2 border-slate-800 shadow-md' : 'border border-slate-200 hover:border-slate-300 shadow-2xs'"
+    >
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+          <mat-icon class="!text-base !w-4 !h-4">receipt_long</mat-icon>
+        </div>
+        <div>
+          <div class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Total Eventos</div>
+          <div class="text-base font-black text-slate-800">{{ kpis().total }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      (click)="filtrarPorOperacion('LOGIN')"
+      class="bg-white rounded-2xl p-3 cursor-pointer transition-all duration-200"
+      [ngClass]="filtroOperacion() === 'LOGIN' ? 'border-2 border-emerald-500 shadow-md' : 'border border-slate-200 hover:border-slate-300 shadow-2xs'"
+    >
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <mat-icon class="!text-base !w-4 !h-4">login</mat-icon>
+        </div>
+        <div>
+          <div class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Inicios Sesión</div>
+          <div class="text-base font-black text-emerald-700">{{ kpis().logins }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      (click)="filtrarPorOperacion('INSERT')"
+      class="bg-white rounded-2xl p-3 cursor-pointer transition-all duration-200"
+      [ngClass]="filtroOperacion() === 'INSERT' ? 'border-2 border-sky-500 shadow-md' : 'border border-slate-200 hover:border-slate-300 shadow-2xs'"
+    >
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+          <mat-icon class="!text-base !w-4 !h-4">add_circle</mat-icon>
+        </div>
+        <div>
+          <div class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Creaciones (DML)</div>
+          <div class="text-base font-black text-sky-700">{{ kpis().inserts }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      (click)="filtrarPorOperacion('UPDATE')"
+      class="bg-white rounded-2xl p-3 cursor-pointer transition-all duration-200"
+      [ngClass]="filtroOperacion() === 'UPDATE' ? 'border-2 border-amber-500 shadow-md' : 'border border-slate-200 hover:border-slate-300 shadow-2xs'"
+    >
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+          <mat-icon class="!text-base !w-4 !h-4">edit_note</mat-icon>
+        </div>
+        <div>
+          <div class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Modificaciones</div>
+          <div class="text-base font-black text-amber-700">{{ kpis().updates }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      (click)="filtrarPorOperacion('AJUSTE_MANUAL')"
+      class="bg-white rounded-2xl p-3 cursor-pointer transition-all duration-200"
+      [ngClass]="filtroOperacion() === 'AJUSTE_MANUAL' ? 'border-2 border-purple-500 shadow-md' : 'border border-slate-200 hover:border-slate-300 shadow-2xs'"
+    >
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+          <mat-icon class="!text-base !w-4 !h-4">tune</mat-icon>
+        </div>
+        <div>
+          <div class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Ajustes Manuales</div>
+          <div class="text-base font-black text-purple-700">{{ kpis().ajustes }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BARRA DE FILTROS SIMPLE Y COMPACTA (UNA SOLA LÍNEA) -->
+  <div class="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-2 flex flex-wrap items-center justify-between gap-2">
+    <div class="flex flex-wrap items-center gap-2 flex-1 min-w-[300px]">
+      <!-- Buscador Compacto -->
+      <div class="relative flex-1 min-w-[160px] max-w-xs">
+        <mat-icon class="absolute left-2.5 top-2 !text-base !w-4 !h-4 text-slate-400">search</mat-icon>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="onSearch()"
+          placeholder="Buscar usuario, IP, detalle..."
+          class="w-full pl-8 pr-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:border-emerald-500 transition-colors"
+        />
+      </div>
+
+      <!-- Selector de Tabla Compacto -->
+      <select
+        [(ngModel)]="filtroTabla"
+        (change)="onSearch()"
+        class="px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:border-emerald-500 text-slate-700"
+      >
+        <option value="TODAS">Todas las Tablas</option>
+        @for (t of catalogos().tablas; track t) {
+          <option [value]="t">{{ t }}</option>
+        }
+      </select>
+
+      <!-- Selector de Operación Compacto -->
+      <select
+        [(ngModel)]="filtroOperacion"
+        (change)="onSearch()"
+        class="px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:border-emerald-500 text-slate-700"
+      >
+        <option value="TODAS">Todas las Operaciones</option>
+        @for (op of catalogos().operaciones; track op) {
+          <option [value]="op">{{ op | formatEnum }}</option>
+        }
+      </select>
+
+      <!-- Selector de Usuario Compacto -->
+      <select
+        [(ngModel)]="filtroUsuario"
+        (change)="onSearch()"
+        class="px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:border-emerald-500 text-slate-700"
+      >
+        <option value="TODOS">Todos los Operadores</option>
+        @for (u of catalogos().usuarios; track u) {
+          <option [value]="u">@{{ u }}</option>
+        }
+      </select>
+
+      <!-- Rango de Fechas Compacto -->
+      <div class="flex items-center gap-1 text-2xs text-slate-500">
+        <input
+          type="date"
+          [(ngModel)]="fechaInicio"
+          (change)="onSearch()"
+          title="Fecha inicial"
+          class="px-2 py-1 text-2xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:border-emerald-500"
+        />
+        <span>al</span>
+        <input
+          type="date"
+          [(ngModel)]="fechaFin"
+          (change)="onSearch()"
+          title="Fecha final"
+          class="px-2 py-1 text-2xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:border-emerald-500"
+        />
+      </div>
+    </div>
+
+    <!-- Botones de Acción de Filtros -->
+    <div class="flex items-center gap-1.5">
+      <button
+        type="button"
+        (click)="onSearch()"
+        class="px-2.5 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
+      >
+        <mat-icon class="!text-xs !w-3.5 !h-3.5">filter_list</mat-icon>
+        <span>Filtrar</span>
+      </button>
+
+      @if (searchTerm() || filtroTabla() !== 'TODAS' || filtroOperacion() !== 'TODAS' || filtroUsuario() !== 'TODOS' || fechaInicio() || fechaFin()) {
+        <button
+          type="button"
+          (click)="limpiarFiltros()"
+          class="px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
+          title="Limpiar todos los filtros"
+        >
+          <mat-icon class="!text-xs !w-3.5 !h-3.5">clear</mat-icon>
+          <span>Limpiar</span>
+        </button>
+      }
+
+      <button
+        type="button"
+        (click)="cargarEventos()"
+        class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+        title="Refrescar lista"
+      >
+        <mat-icon class="!text-base !w-4 !h-4">refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenedor Principal: Tabla No Destructiva con Paginador Anclado -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex flex-col">
+    @if (loading()) {
+      <div class="absolute top-0 left-0 right-0 z-20">
+        <mat-progress-bar mode="indeterminate" class="!h-1"></mat-progress-bar>
+      </div>
+    }
+
+    <!-- Tabla Reactiva con Opacidad Suave -->
+    <div class="overflow-x-auto transition-opacity duration-200" [class.opacity-60]="loading()">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="bg-slate-50/75 border-b border-slate-200">
+          <tr>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">NO.</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">FECHA & HORA</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">OPERADOR</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500 text-center">OPERACIÓN</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">TABLA / MÓDULO</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500">IP ORIGEN</th>
+            <th class="py-3 px-4 font-semibold uppercase tracking-wider text-slate-500 text-right">ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @if (eventos().length === 0 && !loading()) {
+            <tr>
+              <td colspan="7" class="py-10 text-center text-slate-400">
+                <mat-icon class="!text-3xl !w-8 !h-8 mb-1 text-slate-300">security</mat-icon>
+                <div class="text-xs font-semibold">No se encontraron registros de auditoría forense con los criterios seleccionados.</div>
+              </td>
+            </tr>
+          } @else {
+            @for (item of eventos(); track item.auditoriaId) {
+              <tr class="hover:bg-slate-50/70 transition-colors">
+                <td class="py-3 px-4 font-mono font-bold text-slate-700">
+                  {{ item.auditoriaId }}
+                </td>
+                <td class="py-3 px-4 text-slate-500 whitespace-nowrap">
+                  {{ item.fechaEvento | date:'dd/MM/yyyy HH:mm:ss' }}
+                </td>
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 font-bold text-2xs">
+                    <mat-icon class="!text-xs !w-3.5 !h-3.5 text-emerald-600">person</mat-icon>
+                    <span>@{{ item.usuarioBd }}</span>
+                  </div>
+                </td>
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <span
+                    class="text-2xs font-extrabold rounded-full px-2.5 py-0.5 border inline-flex items-center"
+                    [ngClass]="getBadgeOperacionClass(item.operacion)"
+                  >
+                    {{ item.operacion | formatEnum }}
+                  </span>
+                </td>
+                <td class="py-3 px-4">
+                  <div class="font-bold text-slate-800">{{ item.tablaAfectada }}</div>
+                  <div class="text-2xs text-slate-400">{{ item.modulo }}</div>
+                </td>
+                <td class="py-3 px-4 font-mono text-2xs text-slate-600">
+                  {{ item.ipCliente }}
+                </td>
+                <td class="py-3 px-4 text-right whitespace-nowrap">
+                  <button
+                    type="button"
+                    (click)="verDetalle(item)"
+                    class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold text-xs cursor-pointer inline-flex items-center gap-1.5 transition-colors shadow-2xs"
+                    title="Ver detalle del evento forense"
+                  >
+                    <mat-icon class="!text-sm !w-4 !h-4 text-slate-500">visibility</mat-icon>
+                    <span>Detalle</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginador Siempre Anclado -->
+    <div class="border-t border-slate-100 bg-white">
+      <mat-paginator
+        [length]="total()"
+        [pageSize]="limit()"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+      ></mat-paginator>
+    </div>
+  </div>
+</div>

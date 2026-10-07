@@ -1,3 +1,4 @@
+import { FormatEnumPipe, getBadgeColorClass } from '../../../../shared/pipes/format-enum.pipe';
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,10 +12,13 @@ import { AuthService } from '../../../../core/services/auth.service';
 @Component({
   selector: 'app-historial',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, MatButtonModule, MatTooltipModule],
+  imports: [
+    FormatEnumPipe,CommonModule, FormsModule, MatIconModule, MatButtonModule, MatTooltipModule],
   templateUrl: './historial.component.html',
 })
 export class HistorialComponent {
+  badgeClass(v: string): string { return getBadgeColorClass(v); }
+
   readonly state = inject(PedidosStateService);
   readonly pedidosService = inject(PedidosService);
   readonly authService = inject(AuthService);

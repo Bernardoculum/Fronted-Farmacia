@@ -1,4 +1,5 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, inject } from '@angular/core';
+import { ReportExportService } from '../../../../core/services/report-export.service';
 import { CommonModule } from '@angular/common';
 import { PedidoItem } from '../../../../core/models/pedido.models';
 
@@ -7,7 +8,7 @@ import { PedidoItem } from '../../../../core/models/pedido.models';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in print:p-0 print:bg-white">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fade-in print:p-0 print:bg-white">
       <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden flex flex-col max-h-[92vh] print:max-h-none print:shadow-none print:border-none print:w-full">
         
         <!-- Header modal (no imprimible) -->
@@ -35,10 +36,9 @@ import { PedidoItem } from '../../../../core/models/pedido.models';
           
           <!-- Encabezado Ticket -->
           <div class="text-center border-b border-dashed border-slate-300 pb-3">
-            <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-teal-500 text-white font-black text-xl mb-1">
-              +
-            </div>
-            <h2 class="text-base font-black tracking-wider text-slate-800 uppercase">FARMACIA INTEGRAL</h2>
+            <img src="/logo.png" alt="Farmacia Red Central" class="w-14 h-14 mx-auto object-contain mb-1" />
+            <h2 class="text-base font-black tracking-wider text-slate-800 uppercase">FARMACIA RED CENTRAL</h2>
+            <div class="text-xs font-bold text-emerald-700">RED FARMA</div>
             <p class="text-xs text-slate-600">Resolución SAT: 2026-FARM-004918</p>
             <p class="text-xs text-slate-600 font-sans mt-0.5">NIT: 8492041-9 &bull; PBX: (502) 2333-0000</p>
             <p class="text-xs font-medium text-slate-700 font-sans mt-1">
@@ -195,10 +195,11 @@ import { PedidoItem } from '../../../../core/models/pedido.models';
   `
 })
 export class TicketModalComponent {
+  private readonly reportExportService = inject(ReportExportService);
   readonly pedido = input.required<PedidoItem>();
   readonly cerrarModal = output<void>();
 
   imprimirTicket(): void {
-    window.print();
+    this.reportExportService.imprimirTicketTermico(this.pedido());
   }
 }

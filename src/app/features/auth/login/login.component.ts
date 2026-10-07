@@ -49,13 +49,7 @@ export class LoginComponent {
   }
 
   // Prellenar credenciales para pruebas rápidas
-  fillCredentials(username: string, pass: string): void {
-    this.loginForm.patchValue({
-      username,
-      password: pass,
-    });
-    this.errorMessage.set(null);
-  }
+  
 
   onSubmit(): void {
     if (this.loginForm.invalid || this.isLoading()) {
@@ -77,7 +71,7 @@ export class LoginComponent {
         if (err.status === 401) {
           this.errorMessage.set('Usuario o contraseña incorrectos.');
         } else if (err.status === 0) {
-          this.errorMessage.set('No se pudo conectar al servidor backend (http://localhost:3000).');
+          this.errorMessage.set('No se pudo conectar con el servidor central. Verifique su conexión de red.');
         } else {
           this.errorMessage.set(err.error?.message || 'Error al iniciar sesión.');
         }

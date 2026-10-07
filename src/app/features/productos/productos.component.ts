@@ -18,6 +18,7 @@ import { MatMenuModule } from '@angular/material/menu';
 
 import { ProductosService } from '../../core/services/productos.service';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { ProductoListItem } from '../../core/models/producto.models';
 
 import { ProductoDetailModalComponent } from './modals/producto-detail-modal.component';
@@ -53,6 +54,7 @@ export class ProductosComponent implements OnInit {
   readonly productosService = inject(ProductosService);
   readonly authService = inject(AuthService);
   private readonly dialog = inject(MatDialog);
+  private readonly notification = inject(NotificationService);
 
   // Signals del servicio
   readonly productos = this.productosService.productos;
@@ -89,7 +91,7 @@ export class ProductosComponent implements OnInit {
 
   readonly canManageProducts = computed(() => {
     const rol = this.user()?.rol;
-    return rol === 'SUPER_ADMIN' || rol === 'GERENTE_SUCURSAL';
+    return rol === 'SUPER_ADMIN';
   });
 
   readonly canDeleteProducts = computed(() => {
@@ -200,16 +202,22 @@ export class ProductosComponent implements OnInit {
   logout(): void {
     this.authService.logout();
   }
-  desactivarProducto(prod: ProductoListItem): void {
-    if (confirm(`¿Estás seguro de desactivar el medicamento "${prod.nombre}"? Esta acción solo está permitida para SUPER_ADMIN.`)) {
-      this.productosService.deleteProducto(prod.productoId).subscribe({
-        next: () => {
-          // El servicio recarga automáticamente los productos
-        },
-        error: (err) => {
-          alert(err?.error?.message || 'Error al desactivar el medicamento');
-        }
-      });
-    }
+  async desactivarProducto(prod: ProductoListItem): Promise<void> {
+    const ok = await this.notification.confirm({
+      title: '¿Desactivar Medicamento?',
+      text: `¿Estás seguro de desactivar "${prod.nombre}"? Esta acción solo está permitida para SUPER_ADMIN.`,
+      confirmText: 'Sí, Desactivar',
+      type: 'danger',
+    });
+    if (!ok) return;
+
+    this.productosService.deleteProducto(prod.productoId).subscribe({
+      next: () => {
+        this.notification.success('Medicamento Desactivado', `"${prod.nombre}" ha sido desactivado del catálogo.`);
+      },
+      error: (err) => {
+        this.notification.error('Error al desactivar', err?.error?.message || 'No se pudo desactivar el medicamento');
+      }
+    });
   }
 }

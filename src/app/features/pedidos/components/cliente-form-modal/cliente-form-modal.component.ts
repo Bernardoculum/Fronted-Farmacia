@@ -1,134 +1,185 @@
 import { Component, output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { PedidosService } from '../../../../core/services/pedidos.service';
 import { Cliente } from '../../../../core/models/pedido.models';
+import { OnlyNumbersDirective } from '../../../../shared/directives/only-numbers.directive';
+import { OnlyLettersDirective } from '../../../../shared/directives/only-letters.directive';
+import { CustomValidators } from '../../../../shared/validators/custom-validators';
 
 @Component({
   selector: 'app-cliente-form-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    OnlyNumbersDirective,
+    OnlyLettersDirective,
+  ],
   template: `
-    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden flex flex-col">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in">
+      <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden flex flex-col p-6">
         
-        <!-- Header -->
-        <div class="px-6 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm backdrop-blur-md">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-              </svg>
-            </span>
+        <!-- Header Estandarizado -->
+        <div class="flex items-start justify-between border-b border-slate-200 pb-4 mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shadow-xs">
+              <mat-icon class="text-2xl">person_add</mat-icon>
+            </div>
             <div>
-              <h3 class="text-base font-bold text-white">Nuevo Cliente Rápido</h3>
-              <p class="text-xs text-purple-100">Alta ágil para Call Center o Mostrador</p>
+              <span class="text-2xs font-bold text-teal-700 uppercase tracking-wider bg-teal-50 px-2 py-0.5 rounded inline-block">
+                Call Center / POS
+              </span>
+              <h3 class="text-base font-black text-slate-800 mt-0.5">Nuevo Cliente Rápido</h3>
+              <p class="text-xs text-slate-500">Alta ágil para atención de pacientes</p>
             </div>
           </div>
-          <button (click)="cerrarModal.emit()" class="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
+          <button mat-icon-button (click)="cerrarModal.emit()" class="text-slate-400 hover:text-slate-600">
+            <mat-icon>close</mat-icon>
           </button>
         </div>
 
-        <!-- Formulario -->
-        <form [formGroup]="clienteForm" (ngSubmit)="guardar()" class="p-6 space-y-4">
+        <!-- Formulario con CSS Grid -->
+        <form [formGroup]="clienteForm" (ngSubmit)="guardar()" class="space-y-3">
           @if (errorMessage) {
-            <div class="p-3 bg-red-50 text-red-700 text-xs rounded-xl border border-red-200 flex items-center gap-2">
-              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
+            <div class="p-3 bg-rose-50 text-rose-700 text-xs rounded-xl border border-rose-200 flex items-center gap-2">
+              <mat-icon class="text-rose-500 text-base shrink-0">error_outline</mat-icon>
               <span>{{ errorMessage }}</span>
             </div>
           }
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <!-- Nombre -->
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre *</label>
-              <input
-                type="text"
-                formControlName="nombre"
-                placeholder="Ej. Carlos"
-                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-              />
+              <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">Nombre *</label>
+              <mat-form-field appearance="outline" class="w-full">
+                <input
+                  matInput
+                  type="text"
+                  appOnlyLetters
+                  formControlName="nombre"
+                  placeholder="Ej. Carlos"
+                />
+                @if (clienteForm.get('nombre')?.hasError('required') && clienteForm.get('nombre')?.touched) {
+                  <mat-error class="text-2xs">El nombre es obligatorio</mat-error>
+                }
+                @if ((clienteForm.get('nombre')?.hasError('soloNumeros') || clienteForm.get('nombre')?.hasError('soloLetras')) && clienteForm.get('nombre')?.touched) {
+                  <mat-error class="text-2xs">No se permiten números (ej. '323')</mat-error>
+                }
+              </mat-form-field>
             </div>
 
             <!-- Apellido -->
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Apellido</label>
-              <input
-                type="text"
-                formControlName="apellido"
-                placeholder="Ej. Gómez"
-                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-              />
+              <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">Apellido</label>
+              <mat-form-field appearance="outline" class="w-full">
+                <input
+                  matInput
+                  type="text"
+                  appOnlyLetters
+                  formControlName="apellido"
+                  placeholder="Ej. Gómez"
+                />
+                @if ((clienteForm.get('apellido')?.hasError('soloNumeros') || clienteForm.get('apellido')?.hasError('soloLetras')) && clienteForm.get('apellido')?.touched) {
+                  <mat-error class="text-2xs">No se permiten números</mat-error>
+                }
+              </mat-form-field>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <!-- Teléfono -->
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Teléfono Móvil *</label>
-              <input
-                type="text"
-                formControlName="telefono"
-                placeholder="Ej. 55551234"
-                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-              />
+              <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">Teléfono Móvil *</label>
+              <mat-form-field appearance="outline" class="w-full">
+                <input
+                  matInput
+                  type="text"
+                  appOnlyNumbers
+                  maxDigits="8"
+                  maxlength="8"
+                  formControlName="telefono"
+                  placeholder="Ej. 55551234"
+                />
+                @if (clienteForm.get('telefono')?.hasError('required') && clienteForm.get('telefono')?.touched) {
+                  <mat-error class="text-2xs">El teléfono es obligatorio</mat-error>
+                }
+                @if (clienteForm.get('telefono')?.hasError('telefonoInvalido') && clienteForm.get('telefono')?.touched) {
+                  
+                }
+              </mat-form-field>
             </div>
 
             <!-- Correo (opcional) -->
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Correo Electrónico</label>
-              <input
-                type="email"
-                formControlName="email"
-                placeholder="cliente@ejemplo.com"
-                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-              />
+              <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">Correo Electrónico</label>
+              <mat-form-field appearance="outline" class="w-full">
+                <input
+                  matInput
+                  type="email"
+                  formControlName="email"
+                  placeholder="cliente@ejemplo.com"
+                />
+              </mat-form-field>
             </div>
           </div>
 
           <!-- Dirección de Entrega -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Dirección de Entrega / Domicilio *</label>
-            <textarea
-              formControlName="direccion"
-              rows="2"
-              placeholder="Ej. 5ta Avenida 12-40 Zona 10, Edificio Las Flores, Apto 302"
-              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all resize-none"
-            ></textarea>
+            <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">Dirección de Entrega / Domicilio *</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                matInput
+                formControlName="direccion"
+                placeholder="Ej. 5ta Avenida 12-40 Zona 10, Edificio Las Flores"
+              />
+              @if (clienteForm.get('direccion')?.hasError('required') && clienteForm.get('direccion')?.touched) {
+                <mat-error class="text-2xs">La dirección es obligatoria</mat-error>
+              }
+              @if ((clienteForm.get('direccion')?.hasError('soloNumeros') || clienteForm.get('direccion')?.hasError('requiereLetras')) && clienteForm.get('direccion')?.touched) {
+                <mat-error class="text-2xs">No se permiten solo números (ej. '323')</mat-error>
+              }
+            </mat-form-field>
           </div>
 
           <!-- Referencia -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Punto de Referencia (Para motorista)</label>
-            <input
-              type="text"
-              formControlName="referenciaDireccion"
-              placeholder="Ej. Frente al supermercado, portón color gris"
-              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-            />
+            <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">Punto de Referencia</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                matInput
+                formControlName="referenciaDireccion"
+                placeholder="Ej. Frente al supermercado, portón color gris"
+              />
+            </mat-form-field>
           </div>
 
           <!-- Footer Botones -->
-          <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-end gap-2.5">
             <button
               type="button"
+              mat-button
               (click)="cerrarModal.emit()"
-              class="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-medium transition-all">
+              class="!rounded-xl"
+            >
               Cancelar
             </button>
             <button
               type="submit"
+              mat-flat-button
+              color="primary"
               [disabled]="clienteForm.invalid || guardando"
-              class="px-5 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl text-sm font-semibold shadow-md shadow-purple-500/20 transition-all flex items-center gap-2">
-              @if (guardando) {
-                <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-              }
-              <span>Guardar y Seleccionar</span>
+              class="!rounded-xl !bg-teal-600 !text-white !font-bold !px-5"
+            >
+              <span>{{ guardando ? 'Guardando...' : 'Guardar y Seleccionar' }}</span>
             </button>
           </div>
         </form>
@@ -148,35 +199,41 @@ export class ClienteFormModalComponent {
   errorMessage = '';
 
   clienteForm = this.fb.group({
-    nombre: ['', [Validators.required, Validators.minLength(2)]],
-    apellido: [''],
-    telefono: ['', [Validators.required, Validators.minLength(8)]],
-    direccion: ['', [Validators.required, Validators.minLength(5)]],
-    referenciaDireccion: [''],
+    nombre: ['', [Validators.required, CustomValidators.nombrePersona()]],
+    apellido: ['', [CustomValidators.nombrePersona()]],
+    telefono: ['', [Validators.required, CustomValidators.telefonoGuatemala()]],
+    direccion: ['', [Validators.required, Validators.maxLength(300), CustomValidators.textoConLetras()]],
+    referenciaDireccion: ['', [CustomValidators.textoConLetras()]],
     email: ['', [Validators.email]],
   });
 
   guardar(): void {
-    if (this.clienteForm.invalid) return;
+    if (this.clienteForm.invalid) {
+      this.clienteForm.markAllAsTouched();
+      return;
+    }
+
     this.guardando = true;
     this.errorMessage = '';
 
     const val = this.clienteForm.value;
-    this.pedidosService.crearCliente({
-      nombre: val.nombre!,
-      apellido: val.apellido || undefined,
-      telefono: val.telefono!,
-      direccion: val.direccion!,
-      referenciaDireccion: val.referenciaDireccion || undefined,
-      email: val.email || undefined,
-    }).subscribe({
-      next: (nuevo) => {
+    const dto: any = {
+      nombre: val.nombre!.trim(),
+      apellido: val.apellido?.trim() || undefined,
+      telefono: val.telefono!.trim(),
+      direccion: val.direccion!.trim(),
+      referenciaDireccion: val.referenciaDireccion?.trim() || undefined,
+      email: val.email?.trim() || undefined,
+    };
+
+    this.pedidosService.crearCliente(dto).subscribe({
+      next: (cliente) => {
         this.guardando = false;
-        this.clienteCreado.emit(nuevo);
+        this.clienteCreado.emit(cliente);
       },
       error: (err) => {
         this.guardando = false;
-        this.errorMessage = err?.error?.message || 'Error al guardar el cliente. Verifique los datos.';
+        this.errorMessage = err?.error?.message || 'Error al registrar el cliente.';
       },
     });
   }

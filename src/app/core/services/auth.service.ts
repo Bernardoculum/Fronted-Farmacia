@@ -31,17 +31,71 @@ export class AuthService {
   readonly isCallCenter = computed(() => this.userRole() === Role.CALL_CENTER || this.userRole() === 'CALL_CENTER');
   readonly isAuditor = computed(() => this.userRole() === Role.AUDITOR || this.userRole() === 'AUDITOR');
 
-  // Permisos computados de negocio (RBAC)
-  readonly canManageCatalog = computed(() => this.isSuperAdmin() || this.isGerente());
-  readonly canDeleteCatalog = computed(() => this.isSuperAdmin());
-  readonly canViewKardex = computed(() => this.isSuperAdmin() || this.isGerente() || this.isAuditor());
-  readonly canManageLotes = computed(() => this.isSuperAdmin() || this.isGerente());
-  readonly canViewLotes = computed(() => this.isSuperAdmin() || this.isGerente() || this.isAuditor());
+  // Alcance y Aislamiento de Sucursal
+  readonly userSucursalId = computed(() => this.currentUser()?.sucursalId ?? null);
+  readonly isCentralBranch = computed(() => {
+    const u = this.currentUser();
+    return u?.tipoSucursal === 'BODEGA_CENTRAL' || u?.sucursalId === 1;
+  });
+  readonly hasGlobalBranchAccess = computed(() => {
+    return this.isSuperAdmin() || this.isAuditor();
+  });
+
+  // =========================================================================
+  // MATRIZ DE PERMISOS ESTRICTA PARA RUTAS Y SIDEBAR (SSOT)
+  // =========================================================================
   
+  // Dashboard & Reportería
+  readonly canViewDashboard = computed(() => this.isSuperAdmin() || this.isGerente() || this.isAuditor());
+  readonly canViewReportes = computed(() => this.isSuperAdmin() || this.isGerente() || this.isAuditor());
+
+  // Atención & Ventas
   readonly canAccessPOS = computed(() => this.isSuperAdmin() || this.isGerente() || this.isCajero());
   readonly canAccessCallCenter = computed(() => this.isSuperAdmin() || this.isCallCenter());
   readonly canAccessWebOrders = computed(() => this.isSuperAdmin() || this.isGerente() || this.isCallCenter());
-  readonly canAccessHistorial = computed(() => true);
+  readonly canAccessHistorial = computed(() => this.isSuperAdmin() || this.isGerente() || this.isCajero() || this.isCallCenter() || this.isAuditor());
+  readonly canViewCajas = computed(() => this.isSuperAdmin() || this.isGerente() || this.isCajero());
+  readonly canManageCajas = computed(() => this.isSuperAdmin() || this.isGerente() || this.isCajero());
+  readonly canViewClientes = computed(() => this.isSuperAdmin() || this.isGerente() || this.isCajero() || this.isCallCenter());
+
+  // Inventario & Cadena de Suministro
+  readonly canViewProductos = computed(() => true); // Catálogo visible para consulta por todos los roles
+  readonly canManageCatalog = computed(() => this.isSuperAdmin() || this.isGerente());
+  readonly canDeleteCatalog = computed(() => this.isSuperAdmin());
+  readonly canViewLotes = computed(() => this.isSuperAdmin() || this.isGerente() || this.isAuditor());
+  readonly canManageLotes = computed(() => this.isSuperAdmin() || (this.isGerente() && this.isCentralBranch()));
+  readonly canViewKardex = computed(() => this.isSuperAdmin() || this.isGerente() || this.isAuditor());
+  readonly canViewTransferencias = computed(() => this.isSuperAdmin() || this.isGerente() || this.isAuditor());
+  readonly canManageTransferencias = computed(() => this.isSuperAdmin() || this.isGerente());
+
+  // Administración & Red
+  readonly canViewSucursales = computed(() => this.isSuperAdmin() || this.isGerente() || this.isAuditor());
+  readonly canViewPlanillas = computed(() => this.isSuperAdmin() || this.isGerente());
+  readonly canViewActivos = computed(() => this.isSuperAdmin() || this.isGerente());
+  readonly canViewProveedores = computed(() => this.isSuperAdmin() || this.isGerente());
+
+  // Seguridad & Auditoría
+  readonly canViewUsuarios = computed(() => this.isSuperAdmin() || this.isGerente() || this.isAuditor());
+  readonly canViewAuditoria = computed(() => this.isSuperAdmin() || this.isAuditor());
+
+  // Visibilidad de Secciones del Menú Lateral (Sidebar Categories)
+  readonly showSectionVentas = computed(() => 
+    this.canAccessPOS() || this.canAccessCallCenter() || this.canAccessWebOrders() || 
+    this.canAccessHistorial() || this.canViewCajas() || this.canViewClientes()
+  );
+
+  readonly showSectionInventario = computed(() => 
+    this.canViewProductos() || this.canViewLotes() || this.canViewKardex() || this.canViewTransferencias()
+  );
+
+  readonly showSectionAdmin = computed(() => 
+    this.canViewSucursales() || this.canViewPlanillas() || this.canViewActivos() || 
+    this.canViewProveedores() || this.canViewReportes()
+  );
+
+  readonly showSectionSeguridad = computed(() => 
+    this.canViewUsuarios() || this.canViewAuditoria()
+  );
 
   hasRole(roles: (Role | string) | (Role | string)[]): boolean {
     const current = this.userRole();

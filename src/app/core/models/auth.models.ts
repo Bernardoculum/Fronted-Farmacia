@@ -7,6 +7,7 @@ export interface User {
   rol: string;
   sucursal?: string;
   sucursalId?: number;
+  tipoSucursal?: string;
   ultimoLogin?: string;
 }
 

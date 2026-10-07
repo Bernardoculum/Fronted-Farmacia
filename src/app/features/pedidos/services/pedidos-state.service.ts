@@ -22,9 +22,11 @@ export class PedidosStateService {
 
   // Sucursales fijas del sistema
   readonly sucursales = [
-    { id: 1, nombre: 'Sucursal Central (Zona 10)' },
-    { id: 2, nombre: 'Sucursal Zona 1 (Centro Histórico)' },
-    { id: 3, nombre: 'Sucursal Mixco (San Cristóbal)' },
+    { id: 1, nombre: 'Sucursal Central (Atanasio Tzul Z.12)' },
+    { id: 2, nombre: 'Stand Gasolinera Mixco Norte' },
+    { id: 3, nombre: 'Sucursal Antigua Calzada' },
+    { id: 4, nombre: 'Sucursal Xela Los Altos' },
+    { id: 5, nombre: 'Stand Gasolinera Autopista Escuintla' },
   ];
 
   // Estado del Carrito y Selección
@@ -50,6 +52,7 @@ export class PedidosStateService {
   // Modales
   readonly pedidoParaTicket = signal<PedidoItem | null>(null);
   readonly mostrarModalCliente = signal<boolean>(false);
+  readonly mostrarModalOrdenesWeb = signal<boolean>(false);
 
   // Filtros Historial
   readonly filtroOrigen = signal<string>('');

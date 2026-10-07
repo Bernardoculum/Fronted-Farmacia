@@ -1,5 +1,6 @@
 @use '@angular/material' as mat;
 @import "tailwindcss";
+@import "sweetalert2/dist/sweetalert2.min.css";
 
 html {
   height: 100%;
@@ -81,4 +82,155 @@ body {
 
 .safe-bottom {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* ==========================================================================
+   Estándar de Notificaciones MatSnackBar (AGENTS.md)
+   ========================================================================== */
+.mat-mdc-snack-bar-container {
+  &.snackbar-success {
+    --mdc-snackbar-container-color: #065f46;
+    --mdc-snackbar-supporting-text-color: #ffffff;
+    --mat-snack-bar-button-color: #a7f3d0;
+    font-weight: 600;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.4) !important;
+  }
+
+  &.snackbar-error {
+    --mdc-snackbar-container-color: #991b1b;
+    --mdc-snackbar-supporting-text-color: #ffffff;
+    --mat-snack-bar-button-color: #fecaca;
+    font-weight: 600;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.4) !important;
+  }
+
+  &.snackbar-warning {
+    --mdc-snackbar-container-color: #92400e;
+    --mdc-snackbar-supporting-text-color: #ffffff;
+    --mat-snack-bar-button-color: #fde68a;
+    font-weight: 600;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4) !important;
+  }
+
+  &.snackbar-info {
+    --mdc-snackbar-container-color: #0f172a;
+    --mdc-snackbar-supporting-text-color: #ffffff;
+    --mat-snack-bar-button-color: #94a3b8;
+    font-weight: 600;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.4) !important;
+  }
+}
+
+
+/* SweetAlert2 sobre cualquier MatDialog con máxima prioridad */
+div.swal2-container {
+  z-index: 9999999 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+}
+div.swal2-popup {
+  z-index: 10000000 !important;
+  position: relative !important;
+}
+.swal2-backdrop-show {
+  z-index: 9999998 !important;
+}
+
+
+/* ==========================================================================
+   Estándar de Modales y Diálogos Limpios (Sin doble fondo ni transparencias)
+   ========================================================================== */
+.mat-mdc-dialog-container {
+  padding: 0 !important;
+  --mdc-dialog-container-color: #ffffff !important;
+}
+
+.mat-mdc-dialog-container .mdc-dialog__surface,
+.mat-mdc-dialog-container .mat-mdc-dialog-surface,
+.dialog-clean-white .mdc-dialog__surface,
+.dialog-clean-white .mat-mdc-dialog-surface,
+.custom-dialog-container .mdc-dialog__surface,
+.custom-dialog-container .mat-mdc-dialog-surface {
+  border-radius: 16px !important;
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+
+/* ==========================================================================
+   Estándar de Impresión Limpia de Documentos & Reportes (@media print)
+   ========================================================================== */
+@media print {
+  /* Ocultar barra superior, sidebar de navegación, backdrop y botones */
+  header,
+  aside,
+  #app-sidebar,
+  nav,
+  .no-print,
+  .print\:hidden,
+  button,
+  mat-paginator,
+  .mat-mdc-paginator,
+  .cdk-overlay-backdrop,
+  .swal2-container {
+    display: none !important;
+  }
+
+  /* Resetear contenedores para que no se recorte ni oscurezca la página */
+  html, body {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: static !important;
+    overflow: visible !important;
+  }
+
+  /* Eliminar sombras y bordes superfluos en tarjetas */
+  .shadow-xs, .shadow-sm, .shadow-md, .shadow-lg, .shadow-2xl, .shadow-2xs {
+    box-shadow: none !important;
+  }
+
+  /* Evitar cortes indeseados de filas y tablas */
+  table {
+    width: 100% !important;
+    page-break-inside: auto !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
+  }
 }

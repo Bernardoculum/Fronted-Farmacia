@@ -1,0 +1,284 @@
+<!-- Contenido Principal -->
+<main class="flex-1 w-full max-w-7xl mx-auto p-3.5 sm:p-6 space-y-4 sm:space-y-6">
+  
+  <!-- Encabezado Corporativo y Botón de Acción (RF-TRA-01 / CUN-05) -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs">
+    <div>
+      <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
+        Transferencias de Medicamentos
+      </h2>
+      <p class="text-xs text-slate-500 mt-0.5">
+        Despacho desde Bodega Central y recepción controlada de stock entre farmacias
+      </p>
+    </div>
+
+    @if (canManage()) {
+      <div class="flex items-center gap-2.5">
+        @if (authService.isSuperAdmin()) {
+          <button
+            mat-flat-button
+            color="primary"
+            (click)="abrirCrear('DESPACHO')"
+            class="!rounded-xl !bg-emerald-600 hover:!bg-emerald-700 !text-white !font-bold !px-4 !py-2.5 flex items-center gap-2 shadow-sm cursor-pointer"
+          >
+            <mat-icon class="text-lg">local_shipping</mat-icon>
+            <span>Nueva Transferencia / Despacho</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="abrirCrear('SOLICITUD')"
+            class="px-3.5 py-2.5 rounded-xl border border-sky-300 bg-sky-50/80 hover:bg-sky-100 text-sky-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+          >
+            <mat-icon class="!text-base !w-4 !h-4 text-sky-600">assignment_returned</mat-icon>
+            <span>+ Petición de Stock</span>
+          </button>
+        } @else {
+          <button
+            mat-flat-button
+            color="primary"
+            (click)="abrirCrear('SOLICITUD')"
+            class="!rounded-xl !bg-sky-600 hover:!bg-sky-700 !text-white !font-bold !px-4 !py-2.5 flex items-center gap-2 shadow-sm cursor-pointer"
+          >
+            <mat-icon class="text-lg">add_shopping_cart</mat-icon>
+            <span>+ Solicitar Reabastecimiento a Central</span>
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- KPIs de Estado (Filtros interactivos de 1 clic) -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    
+    <!-- Total Transferencias -->
+    <button
+      type="button"
+      (click)="setEstadoFilter('TODOS')"
+      class="bg-white p-4 rounded-2xl border transition-all text-left cursor-pointer hover:shadow-sm"
+      [ngClass]="estadoFilter() === 'TODOS' ? 'border-2 border-slate-800 shadow-sm' : 'border-slate-200 hover:border-slate-300 shadow-xs'"
+    >
+      <div class="flex items-center justify-between mb-2">
+        <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+          <mat-icon class="text-lg">all_inbox</mat-icon>
+        </div>
+        <span class="text-3xs font-bold uppercase text-slate-400">Total Traslados</span>
+      </div>
+      <div class="text-xl sm:text-2xl font-black text-slate-800">{{ kpiTotal() }}</div>
+      <span class="text-3xs text-slate-400 mt-0.5 block">Todas las órdenes</span>
+    </button>
+
+    <!-- Solicitadas -->
+    <button
+      type="button"
+      (click)="setEstadoFilter('SOLICITADA')"
+      class="bg-white p-4 rounded-2xl border transition-all text-left cursor-pointer hover:shadow-sm"
+      [ngClass]="estadoFilter() === 'SOLICITADA' ? 'border-2 border-sky-500 shadow-sm' : 'border-slate-200 hover:border-slate-300 shadow-xs'"
+    >
+      <div class="flex items-center justify-between mb-2">
+        <div class="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+          <mat-icon class="text-lg">pending_actions</mat-icon>
+        </div>
+        <span class="text-3xs font-bold uppercase text-sky-600">Solicitadas</span>
+      </div>
+      <div class="text-xl sm:text-2xl font-black text-sky-700">{{ kpiSolicitadas() }}</div>
+      <span class="text-3xs text-sky-500/80 mt-0.5 block">Pendientes de despacho</span>
+    </button>
+
+    <!-- En Tránsito -->
+    <button
+      type="button"
+      (click)="setEstadoFilter('EN_TRANSITO')"
+      class="bg-white p-4 rounded-2xl border transition-all text-left cursor-pointer hover:shadow-sm"
+      [ngClass]="estadoFilter() === 'EN_TRANSITO' ? 'border-2 border-amber-500 shadow-sm' : 'border-slate-200 hover:border-slate-300 shadow-xs'"
+    >
+      <div class="flex items-center justify-between mb-2">
+        <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+          <mat-icon class="text-lg">local_shipping</mat-icon>
+        </div>
+        <span class="text-3xs font-bold uppercase text-amber-600">En Tránsito</span>
+      </div>
+      <div class="text-xl sm:text-2xl font-black text-amber-700">{{ kpiEnTransito() }}</div>
+      <span class="text-3xs text-amber-500/80 mt-0.5 block">Viajando hacia destino</span>
+    </button>
+
+    <!-- Recibidas -->
+    <button
+      type="button"
+      (click)="setEstadoFilter('RECIBIDA')"
+      class="bg-white p-4 rounded-2xl border transition-all text-left cursor-pointer hover:shadow-sm"
+      [ngClass]="estadoFilter() === 'RECIBIDA' ? 'border-2 border-emerald-500 shadow-sm' : 'border-slate-200 hover:border-slate-300 shadow-xs'"
+    >
+      <div class="flex items-center justify-between mb-2">
+        <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <mat-icon class="text-lg">check_circle</mat-icon>
+        </div>
+        <span class="text-3xs font-bold uppercase text-emerald-600">Recibidas</span>
+      </div>
+      <div class="text-xl sm:text-2xl font-black text-emerald-700">{{ kpiRecibidas() }}</div>
+      <span class="text-3xs text-emerald-500/80 mt-0.5 block">Ingresadas al inventario</span>
+    </button>
+
+  </div>
+
+  <!-- Buscador -->
+  <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+    <div class="relative w-full sm:max-w-md">
+      <mat-icon class="absolute left-3 top-2.5 text-slate-400 text-lg">search</mat-icon>
+      <input
+        type="text"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="onSearchChange($event)"
+        placeholder="Buscar por ID, sucursal u observación..."
+        class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50/50"
+      />
+    </div>
+  </div>
+
+  <!-- Tabla Paginada de Transferencias -->
+  <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden relative">
+    
+    <!-- Barra de Carga Sutil (Sin destruir la tabla) -->
+    @if (loading()) {
+      <div class="absolute top-0 left-0 right-0 z-10">
+        <mat-progress-bar mode="indeterminate" class="!h-1 text-emerald-600"></mat-progress-bar>
+      </div>
+    }
+
+    @if (loading() && transferencias().length === 0) {
+      <div class="py-16 flex flex-col items-center justify-center text-slate-400 text-xs">
+        <mat-spinner diameter="36" class="text-emerald-600 mb-2"></mat-spinner>
+        <span>Consultando transferencias y movimientos...</span>
+      </div>
+    } @else if (!loading() && transferencias().length === 0) {
+      <div class="p-12 text-center text-slate-400 text-xs">
+        <mat-icon class="text-5xl text-slate-300 mb-2">local_shipping</mat-icon>
+        <p class="font-bold text-slate-600 text-sm">No se encontraron transferencias con los filtros actuales</p>
+        <p class="text-slate-400 mt-1">Crea una nueva solicitud de traslado de stock entre sucursales.</p>
+      </div>
+    } @else {
+      <div class="overflow-x-auto transition-opacity duration-200" [class.opacity-60]="loading()">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50/50 border-b border-slate-200">
+            <tr>
+              <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-50/50 text-left">
+                NO. ORDEN
+              </th>
+              <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-50/50 text-left">
+                FECHA SOLICITUD
+              </th>
+              <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-50/50 text-left">
+                SUCURSAL ORIGEN
+              </th>
+              <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-50/50 text-left">
+                SUCURSAL DESTINO
+              </th>
+              <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-50/50 text-left">
+                MEDICAMENTO / LOTE
+              </th>
+              <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-50/50 text-center">
+                CANTIDAD
+              </th>
+              <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-50/50 text-center">
+                ESTADO
+              </th>
+              <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-50/50 text-right">
+                ACCIONES
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (t of transferencias(); track t.transferenciaId) {
+              <tr class="hover:bg-slate-50 transition-colors">
+                
+                <!-- ID -->
+                <td class="py-3 px-4 whitespace-nowrap font-mono font-bold text-slate-800">
+                  {{ t.transferenciaId }}
+                </td>
+
+                <!-- Fecha -->
+                <td class="py-3 px-4 whitespace-nowrap text-slate-600">
+                  {{ t.fechaSolicitud | date:'dd/MM/yyyy HH:mm' }}
+                </td>
+
+                <!-- Origen -->
+                <td class="py-3 px-4">
+                  <div class="font-bold text-slate-800">{{ t.sucursalOrigen.nombre }}</div>
+                  <div class="text-3xs text-slate-500 font-medium">{{ t.sucursalOrigen.tipoSucursal | formatEnum }}</div>
+                </td>
+
+                <!-- Destino -->
+                <td class="py-3 px-4">
+                  <div class="font-bold text-slate-800">{{ t.sucursalDestino.nombre }}</div>
+                  <div class="text-3xs text-slate-500 font-medium">{{ t.sucursalDestino.tipoSucursal | formatEnum }}</div>
+                </td>
+
+                <!-- Medicamento / Lote -->
+                <td class="py-3 px-4">
+                  @if (t.detalles && t.detalles.length > 0) {
+                    <div class="font-bold text-slate-800 text-xs truncate max-w-xs">
+                      {{ t.detalles[0].medicamento }}
+                    </div>
+                    <div class="text-3xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+                      <span class="font-mono bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-slate-700 font-semibold">
+                        {{ t.detalles[0].numeroLote }}
+                      </span>
+                      <span>• {{ t.detalles[0].presentacion || 'Unidad' }}</span>
+                      @if (t.detalles.length > 1) {
+                        <span class="text-sky-700 font-bold bg-sky-50 px-1.5 py-0.5 rounded-full border border-sky-200">
+                          +{{ t.detalles.length - 1 }} más
+                        </span>
+                      }
+                    </div>
+                  } @else {
+                    <span class="text-slate-400 text-xs italic">Sin detalle</span>
+                  }
+                </td>
+
+                <!-- Cantidad -->
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <span class="font-black text-slate-800 text-xs">
+                    {{ t.resumen?.totalUnidadesSolicitadas || 0 }} cajas
+                  </span>
+                </td>
+
+                <!-- Estado -->
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <span [ngClass]="getEstadoBadgeClass(t.estado)" class="px-2.5 py-0.5 rounded-full text-2xs font-extrabold border">
+                    {{ t.estado | formatEnum }}
+                  </span>
+                </td>
+
+                <!-- Acciones -->
+                <td class="py-3 px-4 text-right whitespace-nowrap">
+                  <button
+                    type="button"
+                    (click)="verDetalle(t)"
+                    class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold text-xs cursor-pointer inline-flex items-center gap-1.5 transition-colors shadow-2xs"
+                  >
+                    <mat-icon class="!text-sm !w-4 !h-4 text-slate-500">visibility</mat-icon>
+                    <span>Detalle</span>
+                  </button>
+                </td>
+
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginador Angular Material (OFFSET / FETCH) -->
+      <mat-paginator
+        [length]="totalItems()"
+        [pageSize]="pageSize()"
+        [pageIndex]="pageIndex()"
+        [pageSizeOptions]="[5, 10, 20, 50]"
+        (page)="onPageChange($event)"
+        showFirstLastButtons
+        class="border-t border-slate-200"
+      ></mat-paginator>
+    }
+
+  </div>
+
+</main>

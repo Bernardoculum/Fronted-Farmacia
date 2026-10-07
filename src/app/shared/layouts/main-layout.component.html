@@ -1,156 +1,625 @@
-<div class="min-h-screen bg-slate-100/70 flex flex-col">
-  
-  <!-- Barra de Navegación Superior Persistente -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between shadow-xs">
+<!-- Wrapper Principal del Sistema -->
+<div class="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-white relative">
+
+  <!-- ========================================== -->
+  <!-- 1. NAVBAR SUPERIOR HORIZONTAL LIMPIO      -->
+  <!-- ========================================== -->
+  <header class="fixed top-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 z-30 px-3 sm:px-6 flex items-center justify-between transition-all duration-300">
     
-    <!-- Identidad y Menú de Enlaces -->
-    <div class="flex items-center gap-3 sm:gap-6">
-      <div class="flex items-center gap-2.5 sm:gap-3">
-        <div class="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-tr from-teal-600 to-emerald-500 text-white rounded-xl flex items-center justify-center shadow-md shadow-teal-500/20 shrink-0">
-          <mat-icon class="text-xl sm:text-2xl flex items-center justify-center">local_pharmacy</mat-icon>
-        </div>
-        <div class="leading-tight hidden xs:block">
-          <h1 class="text-sm sm:text-base font-black text-slate-800 tracking-tight">FARMACIA PLUS</h1>
-          <span class="text-2xs text-slate-400 font-medium">Sistema Integral de Farmacia</span>
-        </div>
-      </div>
-
-      <!-- Enlaces Globales de Navegación con RBAC y Active Route -->
-      <nav class="flex items-center gap-1 sm:gap-2">
-        <a 
-          routerLink="/dashboard" 
-          routerLinkActive="bg-teal-50 text-teal-700 font-bold border-teal-200 shadow-xs" 
-          class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent transition-all flex items-center gap-1.5">
-          <mat-icon class="text-base sm:text-lg flex items-center justify-center">dashboard</mat-icon>
-          <span class="hidden md:inline">Dashboard</span>
-        </a>
-        
-        <a 
-          routerLink="/productos" 
-          routerLinkActive="bg-teal-50 text-teal-700 font-bold border-teal-200 shadow-xs" 
-          class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent transition-all flex items-center gap-1.5">
-          <mat-icon class="text-base sm:text-lg flex items-center justify-center">medication</mat-icon>
-          <span class="hidden md:inline">Medicamentos</span>
-        </a>
-
-        @if (authService.canViewLotes()) {
-          <a 
-            routerLink="/lotes" 
-            routerLinkActive="bg-teal-50 text-teal-700 font-bold border-teal-200 shadow-xs" 
-            class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent transition-all flex items-center gap-1.5">
-            <mat-icon class="text-base sm:text-lg flex items-center justify-center">inventory_2</mat-icon>
-            <span class="hidden md:inline">Lotes & Caducidad</span>
-          </a>
-        }
-
-        @if (authService.canAccessPOS() || authService.canAccessCallCenter() || authService.canAccessWebOrders()) {
-          <a 
-            routerLink="/pedidos" 
-            routerLinkActive="bg-teal-50 text-teal-700 font-bold border-teal-200 shadow-xs" 
-            class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent transition-all flex items-center gap-1.5">
-            <mat-icon class="text-base sm:text-lg flex items-center justify-center">point_of_sale</mat-icon>
-            <span>Ventas & Pedidos</span>
-          </a>
-        }
-      </nav>
-    </div>
-
-    <!-- Botón Interactivo de Perfil de Usuario con Popover / Dropdown -->
-    <div>
+    <!-- Lado Izquierdo: Botón Hamburguesa + Logotipo -->
+    <div class="flex items-center gap-3">
+      <!-- Botón Hamburguesa Móvil (< lg) -->
       <button 
         type="button"
-        [matMenuTriggerFor]="profileMenu" 
-        class="flex items-center gap-2.5 sm:gap-3 py-1 px-1.5 sm:px-2.5 rounded-2xl border border-slate-200 hover:border-teal-400 hover:bg-teal-50/40 transition-all cursor-pointer shadow-2xs group focus:outline-none focus:ring-2 focus:ring-teal-500/20"
-        matTooltip="Ver detalles de mi cuenta">
-        
-        <!-- Avatar Circular con Iniciales -->
-        <div class="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-xl bg-gradient-to-tr from-teal-600 to-teal-500 text-white flex items-center justify-center font-black text-2xs sm:text-xs shadow-xs group-hover:scale-105 transition-transform">
-          {{ getUserInitials() }}
-        </div>
+        (click)="layoutService.toggleMobile()"
+        class="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+        aria-label="Abrir menú de navegación">
+        <mat-icon class="!w-6 !h-6 !text-2xl flex items-center justify-center">menu</mat-icon>
+      </button>
 
-        <!-- Nombre y Badge de Rol Estandarizado -->
-        <div class="hidden sm:flex flex-col text-left">
-          <span class="text-xs font-black text-slate-800 leading-tight">
-            {{ getUserDisplayName() }}
-          </span>
-          <span class="text-3xs font-bold text-teal-700 tracking-wider">
-            {{ getFriendlyRoleName() }}
-          </span>
-        </div>
-
-        <!-- Icono Desplegable -->
-        <mat-icon class="text-slate-400 group-hover:text-teal-600 transition-colors text-base !w-4 !h-4 flex items-center justify-center">
-          expand_more
+      <!-- Botón Hamburguesa Desktop (>= lg) -->
+      <button 
+        type="button"
+        (click)="layoutService.toggleCollapse()"
+        class="hidden lg:flex p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+        [matTooltip]="layoutService.isCollapsed() ? 'Expandir menú lateral' : 'Colapsar menú lateral'">
+        <mat-icon class="!w-5 !h-5 !text-xl flex items-center justify-center">
+          {{ layoutService.isCollapsed() ? 'menu_open' : 'menu' }}
         </mat-icon>
       </button>
 
-      <!-- Menú Flotante / Popover de Perfil (Auto-cierre al hacer click fuera) -->
-      <mat-menu #profileMenu="matMenu" xPosition="before" class="!rounded-2xl !p-0 shadow-2xl border border-slate-200 overflow-hidden">
-        <div class="w-72 p-4 space-y-3" (click)="$event.stopPropagation()">
-          
-          <!-- Encabezado de la Tarjeta con Avatar Grande -->
-          <div class="flex items-center gap-3 border-b border-slate-100 pb-3.5">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 text-white flex items-center justify-center font-black text-base shadow-sm shrink-0">
-              {{ getUserInitials() }}
-            </div>
-            <div class="min-w-0">
-              <div class="text-base font-black text-slate-800 truncate">
-                {{ getUserDisplayName() }}
+      <!-- Logotipo e Identidad del Sistema -->
+      <a [routerLink]="authService.getDefaultRouteForRole()" class="flex items-center gap-2.5 group cursor-pointer">
+        <img
+          src="/logo.png"
+          alt="Farmacia Red Central"
+          class="w-10 h-10 object-contain drop-shadow-xs group-hover:scale-105 transition-transform"
+        />
+        <div class="flex flex-col">
+          <div class="flex items-center gap-1.5">
+            <span class="font-black text-slate-800 tracking-tight text-sm sm:text-base leading-none">
+              RED<span class="text-emerald-600">FARMA</span>
+            </span>
+            <span class="text-3xs font-extrabold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+              CENTRAL
+            </span>
+          </div>
+          <span class="text-3xs text-slate-400 font-semibold tracking-wider uppercase hidden sm:inline">
+            Sistema Integral de Gestión
+          </span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Centro: Acceso Rápido al Dashboard / BI (Solo roles con acceso) -->
+    @if (authService.canViewDashboard()) {
+      <div class="hidden md:flex items-center">
+        <a 
+          routerLink="/dashboard" 
+          routerLinkActive="bg-emerald-50 text-emerald-800 border-emerald-300 font-bold" 
+          class="px-3.5 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-600 font-semibold text-xs flex items-center gap-2 transition-all shadow-2xs">
+          <mat-icon class="text-emerald-600 !w-4 !h-4 !text-base flex items-center justify-center">dashboard</mat-icon>
+          <span>Panel de Control (BI)</span>
+        </a>
+      </div>
+    }
+
+    <!-- Lado Derecho: Sucursal Activa + Notificaciones + Perfil de Usuario -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      
+      <!-- Badge de Sucursal Activa -->
+      <div 
+        class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 max-w-[220px]"
+        [matTooltip]="getUserSucursal()">
+        <mat-icon class="text-emerald-600 !w-4 !h-4 !text-base shrink-0 flex items-center justify-center">storefront</mat-icon>
+        <span class="truncate text-2xs uppercase tracking-wide">{{ getUserSucursal() }}</span>
+      </div>
+
+      <!-- Campana de Alertas / Notificaciones -->
+      <button 
+        type="button" 
+        [matMenuTriggerFor]="notifMenu"
+        class="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer relative"
+        matTooltip="Alertas del sistema">
+        <mat-icon class="!w-5 !h-5 !text-xl flex items-center justify-center">notifications_none</mat-icon>
+        <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+      </button>
+
+      <mat-menu #notifMenu="matMenu" xPosition="before" class="!rounded-2xl !p-0 shadow-2xl border border-slate-200 overflow-hidden">
+        <div class="w-72 p-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-2.5">
+            <span class="font-bold text-xs text-slate-800">Alertas Operativas</span>
+            <span class="text-3xs font-extrabold px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">En Línea</span>
+          </div>
+          <div class="space-y-2 text-xs text-slate-600">
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2">
+              <mat-icon class="text-emerald-600 !w-4 !h-4 !text-sm mt-0.5 shrink-0">check_circle</mat-icon>
+              <div>
+                <div class="font-bold text-slate-800 text-2xs">Inventario Sincronizado</div>
+                <div class="text-3xs text-slate-500">Kardex y saldos en tiempo real.</div>
               </div>
-              <div class="text-2xs font-bold text-teal-700 uppercase tracking-wider">
-                {{ getFriendlyRoleName() }}
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2">
+              <mat-icon class="text-sky-600 !w-4 !h-4 !text-sm mt-0.5 shrink-0">inventory_2</mat-icon>
+              <div>
+                <div class="font-bold text-slate-800 text-2xs">Regla FEFO Activa</div>
+                <div class="text-3xs text-slate-500">Rotación por primer vencimiento.</div>
               </div>
             </div>
           </div>
-
-          <!-- Datos de la Sesión Actual -->
-          <div class="space-y-2 text-xs">
-            
-            <!-- Rol Oficial -->
-            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
-              <span class="text-slate-400 font-semibold text-2xs uppercase">Rol</span>
-              <span [ngClass]="getRoleBadgeClass()" class="text-2xs font-extrabold px-2 py-0.5 rounded-md border tracking-wider">
-                {{ getFriendlyRoleName() }}
-              </span>
-            </div>
-
-            <!-- Sucursal Asignada -->
-            <div class="p-2 rounded-xl bg-slate-50 border border-slate-100">
-              <div class="text-slate-400 font-semibold text-2xs uppercase mb-0.5">Sucursal</div>
-              <div class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                <mat-icon class="text-teal-600 text-sm !w-4 !h-4 flex items-center justify-center">store</mat-icon>
-                <span class="truncate">{{ getUserSucursal() }}</span>
-              </div>
-            </div>
-
-            <!-- Estado de Conexión -->
-            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
-              <span class="text-slate-400 font-semibold text-2xs uppercase">Usuario</span>
-              <span class="font-mono text-2xs font-bold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
-                @{{ authService.currentUser()?.username || 'usuario' }}
-              </span>
-            </div>
-
-          </div>
-
-          <!-- Botón de Acción: Cerrar Sesión -->
-          <div class="pt-2 border-t border-slate-100">
-            <button 
-              type="button"
-              (click)="authService.logout()" 
-              class="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs transition-colors cursor-pointer border border-rose-200/80 shadow-2xs">
-              <mat-icon class="text-base text-rose-600 !w-4 !h-4 flex items-center justify-center">logout</mat-icon>
-              <span>Cerrar Sesión</span>
-            </button>
-          </div>
-
         </div>
       </mat-menu>
 
-    </div>
+      <!-- Botón de Perfil de Usuario con Popover / Dropdown -->
+      <div>
+        <button 
+          type="button"
+          [matMenuTriggerFor]="profileMenu" 
+          class="flex items-center gap-2 py-1 px-1.5 sm:px-2.5 rounded-xl border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/40 transition-all cursor-pointer shadow-2xs group focus:outline-none"
+          matTooltip="Mi cuenta">
+          
+          <!-- Avatar Circular -->
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-black text-2xs shadow-2xs group-hover:scale-105 transition-transform">
+            {{ getUserInitials() }}
+          </div>
 
+          <!-- Nombre y Rol -->
+          <div class="hidden sm:flex flex-col text-left">
+            <span class="text-xs font-black text-slate-800 leading-tight">
+              {{ getUserDisplayName() }}
+            </span>
+            <span class="text-3xs font-bold text-emerald-700 tracking-wider">
+              {{ getFriendlyRoleName() }}
+            </span>
+          </div>
+
+          <mat-icon class="text-slate-400 group-hover:text-emerald-600 transition-colors text-base !w-4 !h-4 flex items-center justify-center">
+            expand_more
+          </mat-icon>
+        </button>
+
+        <!-- Menú Flotante de Perfil -->
+        <mat-menu #profileMenu="matMenu" xPosition="before" class="!rounded-2xl !p-0 shadow-2xl border border-slate-200 overflow-hidden">
+          <div class="w-72 p-4 space-y-3" (click)="$event.stopPropagation()">
+            
+            <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+              <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0">
+                {{ getUserInitials() }}
+              </div>
+              <div class="min-w-0">
+                <div class="text-sm font-black text-slate-800 truncate">
+                  {{ getUserDisplayName() }}
+                </div>
+                <div class="text-3xs font-bold text-emerald-700 uppercase tracking-wider">
+                  {{ getFriendlyRoleName() }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Datos de Sesión -->
+            <div class="space-y-2 text-xs">
+              <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+                <span class="text-slate-400 font-semibold text-3xs uppercase">Rol</span>
+                <span [ngClass]="getRoleBadgeClass()" class="text-2xs font-extrabold px-2 py-0.5 rounded-md border tracking-wider">
+                  {{ getFriendlyRoleName() }}
+                </span>
+              </div>
+
+              <div class="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                <div class="text-slate-400 font-semibold text-3xs uppercase mb-0.5">Sucursal</div>
+                <div class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <mat-icon class="text-emerald-600 text-sm !w-4 !h-4 flex items-center justify-center">store</mat-icon>
+                  <span class="truncate">{{ getUserSucursal() }}</span>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+                <span class="text-slate-400 font-semibold text-3xs uppercase">Usuario</span>
+                <span class="font-mono text-2xs font-bold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+                  @{{ authService.currentUser()?.username || 'usuario' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Cerrar Sesión -->
+            <div class="pt-2 border-t border-slate-100">
+              <button 
+                type="button"
+                (click)="authService.logout()" 
+                class="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs transition-colors cursor-pointer border border-rose-200 shadow-2xs">
+                <mat-icon class="text-base text-rose-600 !w-4 !h-4 flex items-center justify-center">logout</mat-icon>
+                <span>Cerrar Sesión</span>
+              </button>
+            </div>
+
+          </div>
+        </mat-menu>
+      </div>
+
+    </div>
   </header>
 
-  <!-- Router Outlet de Vistas Hijas -->
-  <router-outlet></router-outlet>
+
+  <!-- ========================================== -->
+  <!-- 2. BACKDROP OSCURO EN MÓVIL (< lg)        -->
+  <!-- ========================================== -->
+  @if (layoutService.isMobileOpen()) {
+    <div 
+      (click)="layoutService.closeMobile()"
+      class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-40 lg:hidden transition-opacity duration-300"
+      aria-hidden="true">
+    </div>
+  }
+
+
+  <!-- ========================================== -->
+  <!-- 3. SIDEBAR LATERAL COLAPSABLE Y RESPONSIVE -->
+  <!-- ========================================== -->
+  <aside 
+    [class.translate-x-0]="layoutService.isMobileOpen()"
+    [class.-translate-x-full]="!layoutService.isMobileOpen()"
+    [ngClass]="layoutService.isCollapsed() ? 'lg:w-20' : 'lg:w-64'"
+    class="fixed top-0 bottom-0 left-0 z-50 lg:z-20 pt-16 bg-white border-r border-slate-200/80 flex flex-col transition-all duration-300 ease-in-out lg:translate-x-0 overflow-y-auto overflow-x-hidden shadow-xl lg:shadow-none">
+    
+    <!-- Navegación por Categorías -->
+    <div class="p-3 space-y-5 flex-1">
+
+      <!-- CATEGORÍA: VENTAS -->
+      @if (authService.showSectionVentas()) {
+        <div>
+          @if (!layoutService.isCollapsed()) {
+            <div class="text-3xs font-black tracking-wider text-slate-400 uppercase px-3 mb-1.5 select-none">
+              Ventas
+            </div>
+          } @else {
+            <div class="w-full h-px bg-slate-100 my-2"></div>
+          }
+
+          <nav class="space-y-1">
+            <!-- Ventas POS -->
+            @if (authService.canAccessPOS()) {
+              <a 
+                routerLink="/pedidos/pos" 
+                (click)="layoutService.closeMobile()"
+                routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                [matTooltip]="layoutService.isCollapsed() ? 'Ventas POS' : ''"
+                matTooltipPosition="right"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center shrink-0">point_of_sale</mat-icon>
+                @if (!layoutService.isCollapsed()) {
+                  <span class="truncate">Ventas POS</span>
+                }
+              </a>
+            }
+
+            <!-- Call Center (Despacho) -->
+            @if (authService.canAccessCallCenter()) {
+              <a 
+                routerLink="/pedidos/call-center" 
+                (click)="layoutService.closeMobile()"
+                routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                [matTooltip]="layoutService.isCollapsed() ? 'Call Center (Despacho)' : ''"
+                matTooltipPosition="right"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center shrink-0">support_agent</mat-icon>
+                @if (!layoutService.isCollapsed()) {
+                  <span class="truncate">Call Center (Despacho)</span>
+                }
+              </a>
+            }
+
+            <!-- Historial de Pedidos -->
+            @if (authService.canAccessHistorial()) {
+              <a 
+                routerLink="/pedidos/historial" 
+                (click)="layoutService.closeMobile()"
+                routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                [matTooltip]="layoutService.isCollapsed() ? 'Historial de Pedidos' : ''"
+                matTooltipPosition="right"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center shrink-0">receipt_long</mat-icon>
+                @if (!layoutService.isCollapsed()) {
+                  <span class="truncate">Historial de Pedidos</span>
+                }
+              </a>
+            }
+
+            <!-- Cajas & Arqueo -->
+            @if (authService.canViewCajas()) {
+              <a 
+                routerLink="/cajas" 
+                (click)="layoutService.closeMobile()"
+                routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                [matTooltip]="layoutService.isCollapsed() ? 'Cajas & Arqueo' : ''"
+                matTooltipPosition="right"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center shrink-0">payments</mat-icon>
+                @if (!layoutService.isCollapsed()) {
+                  <span class="truncate">Cajas & Arqueo</span>
+                }
+              </a>
+            }
+
+            <!-- Clientes -->
+            @if (authService.canViewClientes()) {
+              <a 
+                routerLink="/clientes" 
+                (click)="layoutService.closeMobile()"
+                routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                [matTooltip]="layoutService.isCollapsed() ? 'Clientes' : ''"
+                matTooltipPosition="right"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center shrink-0">people</mat-icon>
+                @if (!layoutService.isCollapsed()) {
+                  <span class="truncate">Clientes</span>
+                }
+              </a>
+            }
+          </nav>
+        </div>
+      }
+
+
+      <!-- CATEGORÍA: INVENTARIO -->
+      @if (authService.showSectionInventario()) {
+        <div>
+          @if (!layoutService.isCollapsed()) {
+            <div class="text-3xs font-black tracking-wider text-slate-400 uppercase px-3 mb-1.5 select-none">
+              Inventario
+            </div>
+          } @else {
+            <div class="w-full h-px bg-slate-100 my-2"></div>
+          }
+
+          <nav class="space-y-1">
+            <!-- Medicamentos -->
+            @if (authService.canViewProductos()) {
+              <a 
+                routerLink="/productos" 
+                (click)="layoutService.closeMobile()"
+                routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                [matTooltip]="layoutService.isCollapsed() ? 'Medicamentos' : ''"
+                matTooltipPosition="right"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center shrink-0">medication</mat-icon>
+                @if (!layoutService.isCollapsed()) {
+                  <span class="truncate">Medicamentos</span>
+                }
+              </a>
+            }
+
+            <!-- Lotes & Vencimiento -->
+            @if (authService.canViewLotes()) {
+              <a 
+                routerLink="/lotes" 
+                (click)="layoutService.closeMobile()"
+                routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                [matTooltip]="layoutService.isCollapsed() ? 'Lotes & Vencimiento' : ''"
+                matTooltipPosition="right"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center shrink-0">inventory_2</mat-icon>
+                @if (!layoutService.isCollapsed()) {
+                  <span class="truncate">Lotes & Vencimiento</span>
+                }
+              </a>
+            }
+
+            <!-- Kardex -->
+            @if (authService.canViewKardex()) {
+              <a 
+                routerLink="/kardex" 
+                (click)="layoutService.closeMobile()"
+                routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                [matTooltip]="layoutService.isCollapsed() ? 'Kardex' : ''"
+                matTooltipPosition="right"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center shrink-0">history_edu</mat-icon>
+                @if (!layoutService.isCollapsed()) {
+                  <span class="truncate">Kardex</span>
+                }
+              </a>
+            }
+
+            <!-- Transferencias -->
+            @if (authService.canViewTransferencias()) {
+              <a 
+                routerLink="/transferencias" 
+                (click)="layoutService.closeMobile()"
+                routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                [matTooltip]="layoutService.isCollapsed() ? 'Transferencias' : ''"
+                matTooltipPosition="right"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center shrink-0">local_shipping</mat-icon>
+                @if (!layoutService.isCollapsed()) {
+                  <span class="truncate">Transferencias</span>
+                }
+              </a>
+            }
+          </nav>
+        </div>
+      }
+
+
+      <!-- CATEGORÍA: ADMINISTRACIÓN (Acordeón) -->
+      @if (authService.showSectionAdmin()) {
+        <div>
+          @if (!layoutService.isCollapsed()) {
+            <button 
+              type="button"
+              (click)="layoutService.toggleAdmin()"
+              class="w-full flex items-center justify-between px-3 py-1.5 text-3xs font-black tracking-wider text-slate-400 uppercase hover:text-slate-700 transition-colors cursor-pointer select-none">
+              <span>Administración</span>
+              <mat-icon 
+                [class.rotate-180]="layoutService.isAdminExpanded()"
+                class="!w-4 !h-4 !text-base transition-transform duration-200 flex items-center justify-center">
+                expand_more
+              </mat-icon>
+            </button>
+          } @else {
+            <div class="w-full h-px bg-slate-100 my-2"></div>
+          }
+
+          <!-- Submenús de Administración Expandido -->
+          @if (!layoutService.isCollapsed() && layoutService.isAdminExpanded()) {
+            <nav class="space-y-1 pl-2 pt-1 border-l-2 border-slate-100 ml-3">
+              <!-- Sucursales -->
+              @if (authService.canViewSucursales()) {
+                <a 
+                  routerLink="/sucursales" 
+                  (click)="layoutService.closeMobile()"
+                  routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                  class="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                  <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-base !w-4 !h-4 flex items-center justify-center shrink-0">storefront</mat-icon>
+                  <span class="truncate">Sucursales</span>
+                </a>
+              }
+
+              <!-- Planillas -->
+              @if (authService.canViewPlanillas()) {
+                <a 
+                  routerLink="/planillas" 
+                  (click)="layoutService.closeMobile()"
+                  routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                  class="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                  <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-base !w-4 !h-4 flex items-center justify-center shrink-0">badge</mat-icon>
+                  <span class="truncate">Planillas</span>
+                </a>
+              }
+
+              <!-- Activos Fijos -->
+              @if (authService.canViewActivos()) {
+                <a 
+                  routerLink="/activos" 
+                  (click)="layoutService.closeMobile()"
+                  routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                  class="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                  <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-base !w-4 !h-4 flex items-center justify-center shrink-0">domain</mat-icon>
+                  <span class="truncate">Activos Fijos</span>
+                </a>
+              }
+
+              <!-- Proveedores -->
+              @if (authService.canViewProveedores()) {
+                <button 
+                  type="button"
+                  (click)="irAProveedores()"
+                  class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group text-left cursor-pointer">
+                  <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-base !w-4 !h-4 flex items-center justify-center shrink-0">factory</mat-icon>
+                  <span class="truncate">Proveedores</span>
+                </button>
+              }
+
+              <!-- Reportería (BI) -->
+              @if (authService.canViewReportes()) {
+                <a 
+                  routerLink="/reportes" 
+                  (click)="layoutService.closeMobile()"
+                  routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                  class="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                  <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-base !w-4 !h-4 flex items-center justify-center shrink-0">insights</mat-icon>
+                  <span class="truncate">Reportería (BI)</span>
+                </a>
+              }
+            </nav>
+          }
+
+          <!-- Modo Colapsado en Desktop: Iconos Directos con Tooltip -->
+          @if (layoutService.isCollapsed()) {
+            <nav class="space-y-1">
+              @if (authService.canViewSucursales()) {
+                <a 
+                  routerLink="/sucursales" 
+                  routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                  matTooltip="Sucursales"
+                  matTooltipPosition="right"
+                  class="flex items-center justify-center p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                  <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center">storefront</mat-icon>
+                </a>
+              }
+
+              @if (authService.canViewPlanillas()) {
+                <a 
+                  routerLink="/planillas" 
+                  routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                  matTooltip="Planillas"
+                  matTooltipPosition="right"
+                  class="flex items-center justify-center p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                  <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center">badge</mat-icon>
+                </a>
+              }
+
+              @if (authService.canViewActivos()) {
+                <a 
+                  routerLink="/activos" 
+                  routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                  matTooltip="Activos Fijos"
+                  matTooltipPosition="right"
+                  class="flex items-center justify-center p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                  <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center">domain</mat-icon>
+                </a>
+              }
+
+              @if (authService.canViewProveedores()) {
+                <button 
+                  type="button"
+                  (click)="irAProveedores()"
+                  matTooltip="Proveedores"
+                  matTooltipPosition="right"
+                  class="w-full flex items-center justify-center p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group cursor-pointer">
+                  <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center">factory</mat-icon>
+                </button>
+              }
+
+              @if (authService.canViewReportes()) {
+                <a 
+                  routerLink="/reportes" 
+                  routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                  matTooltip="Reportería (BI)"
+                  matTooltipPosition="right"
+                  class="flex items-center justify-center p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                  <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center">insights</mat-icon>
+                </a>
+              }
+            </nav>
+          }
+        </div>
+      }
+
+
+      <!-- CATEGORÍA: SEGURIDAD -->
+      @if (authService.showSectionSeguridad()) {
+        <div>
+          @if (!layoutService.isCollapsed()) {
+            <div class="text-3xs font-black tracking-wider text-slate-400 uppercase px-3 mb-1.5 select-none">
+              Seguridad
+            </div>
+          } @else {
+            <div class="w-full h-px bg-slate-100 my-2"></div>
+          }
+
+          <nav class="space-y-1">
+            <!-- Usuarios -->
+            @if (authService.canViewUsuarios()) {
+              <a 
+                routerLink="/usuarios" 
+                (click)="layoutService.closeMobile()"
+                routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                [matTooltip]="layoutService.isCollapsed() ? 'Usuarios' : ''"
+                matTooltipPosition="right"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center shrink-0">manage_accounts</mat-icon>
+                @if (!layoutService.isCollapsed()) {
+                  <span class="truncate">Usuarios</span>
+                }
+              </a>
+            }
+
+            <!-- Bitácora Forense -->
+            @if (authService.canViewAuditoria()) {
+              <a 
+                routerLink="/auditoria" 
+                (click)="layoutService.closeMobile()"
+                routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
+                [matTooltip]="layoutService.isCollapsed() ? 'Bitácora Forense' : ''"
+                matTooltipPosition="right"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center shrink-0">security</mat-icon>
+                @if (!layoutService.isCollapsed()) {
+                  <span class="truncate">Bitácora Forense</span>
+                }
+              </a>
+            }
+          </nav>
+        </div>
+      }
+
+    </div>
+
+    <!-- Pie del Sidebar: Versión y Estado -->
+    @if (!layoutService.isCollapsed()) {
+      <div class="p-3 border-t border-slate-100 bg-slate-50/50">
+        <div class="flex items-center justify-between text-3xs text-slate-400">
+          <span class="font-bold">v2.4 Pro Edition</span>
+          <span class="flex items-center gap-1 font-semibold text-emerald-600">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Online
+          </span>
+        </div>
+      </div>
+    }
+
+  </aside>
+
+
+  <!-- ========================================== -->
+  <!-- 4. CONTENEDOR PRINCIPAL (<main>)          -->
+  <!-- ========================================== -->
+  <main 
+    [ngClass]="layoutService.isCollapsed() ? 'lg:ml-20' : 'lg:ml-64'"
+    class="flex-1 min-w-0 overflow-x-hidden pt-16 transition-all duration-300">
+    <div class="p-4 sm:p-6 lg:p-8">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+
 </div>
