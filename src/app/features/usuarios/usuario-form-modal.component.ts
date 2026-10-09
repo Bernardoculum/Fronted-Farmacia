@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { UsersService } from '../../core/services/users.service';
 import { SucursalesService } from '../../core/services/sucursales.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -15,7 +16,7 @@ import { FormatEnumPipe } from '../../shared/pipes/format-enum.pipe';
 import { OnlyNumbersDirective } from '../../shared/directives/only-numbers.directive';
 import { OnlyLettersDirective } from '../../shared/directives/only-letters.directive';
 import { CustomValidators } from '../../shared/validators/custom-validators';
-import { UserItem, RolOption } from '../../core/models/users.models';
+import { UserItem, RolOption, ColaboradorDisponible } from '../../core/models/users.models';
 
 @Component({
   selector: 'app-usuario-form-modal',
@@ -29,6 +30,7 @@ import { UserItem, RolOption } from '../../core/models/users.models';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatProgressSpinnerModule,
     FormatEnumPipe,
     OnlyNumbersDirective,
     OnlyLettersDirective,
@@ -114,6 +116,85 @@ import { UserItem, RolOption } from '../../core/models/users.models';
         <!-- PESTAÑA 1: DATOS PERSONALES -->
         @if (activeTab === 'generales') {
           <div class="space-y-3.5 animate-in fade-in duration-150">
+
+            <!-- Selector de Origen de Colaborador (Solo al Crear) -->
+            @if (!isEditing) {
+              <div class="p-3.5 bg-slate-50 border border-slate-200/90 rounded-2xl space-y-2.5">
+                <div>
+                  <span class="text-3xs font-extrabold uppercase tracking-wider text-slate-500">Origen del Colaborador:</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    (click)="setModoColaborador('EXISTENTE')"
+                    [class]="modoColaborador() === 'EXISTENTE' ? 'bg-white border-emerald-500 text-emerald-800 shadow-2xs font-black' : 'bg-slate-100/70 border-slate-200 text-slate-600 font-semibold hover:bg-slate-200/50'"
+                    class="p-2.5 rounded-xl border text-xs flex items-center gap-2 transition-all cursor-pointer text-left"
+                  >
+                    <mat-icon class="!w-4 !h-4 !text-base" [class.text-emerald-600]="modoColaborador() === 'EXISTENTE'">how_to_reg</mat-icon>
+                    <div>
+                      <div class="text-xs leading-tight">Colaborador en Nómina</div>
+                      <div class="text-3xs text-slate-400 font-normal">Ya registrado en Planillas</div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="setModoColaborador('NUEVO')"
+                    [class]="modoColaborador() === 'NUEVO' ? 'bg-white border-emerald-500 text-emerald-800 shadow-2xs font-black' : 'bg-slate-100/70 border-slate-200 text-slate-600 font-semibold hover:bg-slate-200/50'"
+                    class="p-2.5 rounded-xl border text-xs flex items-center gap-2 transition-all cursor-pointer text-left"
+                  >
+                    <mat-icon class="!w-4 !h-4 !text-base" [class.text-emerald-600]="modoColaborador() === 'NUEVO'">person_add</mat-icon>
+                    <div>
+                      <div class="text-xs leading-tight">Crear Nuevo Colaborador</div>
+                      <div class="text-3xs text-slate-400 font-normal">Ingresar datos manualmente</div>
+                    </div>
+                  </button>
+                </div>
+
+                <!-- Dropdown de Colaboradores Existentes -->
+                @if (modoColaborador() === 'EXISTENTE') {
+                  <div class="pt-2 border-t border-slate-200/70">
+                    <label class="block text-2xs font-bold text-slate-700 uppercase mb-1">
+                      Seleccionar Colaborador sin Cuenta de Acceso *
+                    </label>
+
+                    @if (cargandoColaboradores()) {
+                      <div class="p-2.5 text-xs text-slate-500 flex items-center gap-2 bg-white rounded-xl border border-slate-200">
+                        <mat-spinner diameter="16"></mat-spinner>
+                        <span>Cargando colaboradores disponibles en nómina...</span>
+                      </div>
+                    } @else if (colaboradoresDisponibles().length === 0) {
+                      <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs flex items-start gap-2">
+                        <mat-icon class="!text-base !w-4 !h-4 text-amber-600 shrink-0 mt-0.5">info</mat-icon>
+                        <div>
+                          <div class="font-bold">No hay colaboradores pendientes</div>
+                          <div class="text-3xs text-amber-700 mt-0.5">Todos los colaboradores activos ya tienen una cuenta asignada. Puedes seleccionar "Crear Nuevo Colaborador".</div>
+                        </div>
+                      </div>
+                    } @else {
+                      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full usuario-dialog-field">
+                        <mat-select
+                          [value]="empleadoSeleccionadoId()"
+                          (selectionChange)="onSeleccionarColaborador($event.value)"
+                          placeholder="Selecciona un colaborador..."
+                        >
+                          @for (c of colaboradoresDisponibles(); track c.empleadoId) {
+                            <mat-option [value]="c.empleadoId">
+                              <span class="font-bold text-slate-800">{{ c.nombreCompleto }}</span>
+                              <span class="text-2xs text-slate-500 ml-2">({{ c.puestoNombre }} • {{ c.sucursalNombre }})</span>
+                            </mat-option>
+                          }
+                        </mat-select>
+                        <mat-icon matPrefix class="text-slate-400 !text-sm mr-1">badge</mat-icon>
+                      </mat-form-field>
+
+
+                    }
+                  </div>
+                }
+              </div>
+            }
             
             <!-- Grid 2 Columnas: Nombres y Apellidos Separados -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -291,7 +372,7 @@ import { UserItem, RolOption } from '../../core/models/users.models';
                   Rol del Sistema *
                 </label>
                 <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full usuario-dialog-field">
-                  <mat-select formControlName="rolId" [disabled]="isCurrentUser" placeholder="Seleccione rol...">
+                  <mat-select formControlName="rolId" placeholder="Seleccione rol...">
                     @for (r of roles(); track r.rolId) {
                       <mat-option [value]="r.rolId">{{ r.nombre | formatEnum }}</mat-option>
                     }
@@ -304,9 +385,9 @@ import { UserItem, RolOption } from '../../core/models/users.models';
             </div>
 
             @if (isCurrentUser) {
-              <div class="text-3xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 font-medium flex items-center gap-1.5">
-                <mat-icon class="!w-4 !h-4 !text-sm text-amber-600">lock</mat-icon>
-                <span>Tu rol de Administrador está protegido para prevenir bloqueos de acceso a la plataforma.</span>
+              <div class="text-3xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-2.5 font-medium flex items-center gap-2">
+                <mat-icon class="!w-4 !h-4 !text-sm text-amber-600 shrink-0">lock</mat-icon>
+                <span><strong>Tu propia cuenta activa:</strong> Tu rol y nombre de usuario están bloqueados para proteger tu acceso de Administrador contra auto-democión o bloqueos accidentales.</span>
               </div>
             }
 
@@ -519,6 +600,11 @@ export class UsuarioFormModalComponent implements OnInit {
 
   readonly submitting = signal<boolean>(false);
   readonly roles = signal<RolOption[]>([]);
+  readonly modoColaborador = signal<'EXISTENTE' | 'NUEVO'>('EXISTENTE');
+  readonly colaboradoresDisponibles = signal<ColaboradorDisponible[]>([]);
+  readonly cargandoColaboradores = signal<boolean>(false);
+  readonly empleadoSeleccionadoId = signal<number | null>(null);
+  readonly colaboradorSeleccionado = signal<ColaboradorDisponible | null>(null);
   readonly sucursales = signal<any[]>([]);
 
   readonly currentPasswordValue = signal<string>('');
@@ -531,7 +617,10 @@ export class UsuarioFormModalComponent implements OnInit {
   get isCurrentUser(): boolean {
     const current = this.authService.currentUser();
     if (!current || !this.data) return false;
-    return current.credencialId === this.data.credencialId || current.username.toLowerCase() === this.data.username.toLowerCase();
+    return (
+      Number(current.credencialId) === Number(this.data.credencialId) ||
+      (!!current.username && !!this.data.username && current.username.toLowerCase() === this.data.username.toLowerCase())
+    );
   }
 
   ngOnInit(): void {
@@ -559,6 +648,13 @@ export class UsuarioFormModalComponent implements OnInit {
       confirmarPassword: ['', this.isEditing ? [] : [Validators.required]],
     });
 
+    if (this.isCurrentUser) {
+      this.userForm.get('rolId')?.disable();
+      this.userForm.get('username')?.disable();
+    } else if (this.isEditing) {
+      this.userForm.get('username')?.disable();
+    }
+
     this.userForm.get('nuevaPassword')?.valueChanges.subscribe((val) => {
       this.currentPasswordValue.set(val || '');
     });
@@ -568,7 +664,70 @@ export class UsuarioFormModalComponent implements OnInit {
     this.currentPasswordValue.set(this.userForm.get('nuevaPassword')?.value || '');
   }
 
+  cargarColaboradoresDisponibles(): void {
+    this.cargandoColaboradores.set(true);
+    this.usersService.getColaboradoresDisponibles().subscribe({
+      next: (res) => {
+        const lista = res || [];
+        this.colaboradoresDisponibles.set(lista);
+        this.cargandoColaboradores.set(false);
+        // Si no hay colaboradores sin usuario, cambiamos automáticamente a modo nuevo
+        if (lista.length === 0) {
+          this.modoColaborador.set('NUEVO');
+        }
+      },
+      error: () => this.cargandoColaboradores.set(false),
+    });
+  }
+
+  setModoColaborador(modo: 'EXISTENTE' | 'NUEVO'): void {
+    this.modoColaborador.set(modo);
+    if (modo === 'NUEVO') {
+      this.empleadoSeleccionadoId.set(null);
+      this.colaboradorSeleccionado.set(null);
+      this.userForm.patchValue({
+        nombre: '',
+        apellido: '',
+        dpi: '',
+        telefono: '',
+        sucursalId: '',
+        username: '',
+      });
+    } else {
+      if (this.colaboradoresDisponibles().length > 0 && !this.empleadoSeleccionadoId()) {
+        this.onSeleccionarColaborador(this.colaboradoresDisponibles()[0].empleadoId);
+      }
+    }
+  }
+
+  onSeleccionarColaborador(empleadoId: number): void {
+    this.empleadoSeleccionadoId.set(empleadoId);
+    const colab = this.colaboradoresDisponibles().find((c) => c.empleadoId === empleadoId) || null;
+    this.colaboradorSeleccionado.set(colab);
+    if (colab) {
+      this.userForm.patchValue({
+        nombre: colab.nombre,
+        apellido: colab.apellido,
+        dpi: colab.dpi || '',
+        telefono: colab.telefono || '',
+        sucursalId: colab.sucursalId || '',
+      });
+
+      // Sugerir username limpio
+      const primerNombre = (colab.nombre || '').trim().split(' ')[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const primerApellido = (colab.apellido || '').trim().split(' ')[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (primerNombre && primerApellido) {
+        const sugerido = `${primerNombre[0]}${primerApellido}`.replace(/[^a-z0-9]/g, '');
+        this.userForm.patchValue({ username: sugerido });
+      }
+    }
+  }
+
   private cargarCatalogos(): void {
+    if (!this.isEditing) {
+      this.cargarColaboradoresDisponibles();
+    }
+
     this.usersService.cargarRoles().subscribe({
       next: (res) => this.roles.set(res || []),
     });
@@ -590,6 +749,15 @@ export class UsuarioFormModalComponent implements OnInit {
   }
 
     guardarDatosGenerales(): void {
+    if (!this.isEditing && this.modoColaborador() === 'EXISTENTE') {
+      if (!this.empleadoSeleccionadoId()) {
+        this.notification.warning('Seleccionar Colaborador', 'Por favor selecciona un colaborador de la lista antes de continuar.');
+        return;
+      }
+      this.activeTab = 'seguridad';
+      return;
+    }
+
     const invalidNombre = this.userForm.get('nombre')?.invalid;
     const invalidApellido = this.userForm.get('apellido')?.invalid;
     const invalidSucursal = this.userForm.get('sucursalId')?.invalid;
@@ -606,7 +774,7 @@ export class UsuarioFormModalComponent implements OnInit {
       return;
     }
 
-    const formVal = this.userForm.value;
+    const formVal = this.userForm.getRawValue();
 
     if (this.isEditing && this.data) {
       this.submitting.set(true);
@@ -734,16 +902,23 @@ export class UsuarioFormModalComponent implements OnInit {
       }
 
       this.submitting.set(true);
-      const dto = {
-        nombre: formVal.nombre.trim(),
-        apellido: formVal.apellido.trim(),
-        dpi: formVal.dpi?.trim() || undefined,
-        telefono: formVal.telefono?.trim() || undefined,
-        username: formVal.username.trim().toLowerCase(),
-        password: formVal.nuevaPassword,
-        rolId: Number(formVal.rolId),
-        sucursalId: Number(formVal.sucursalId),
-      };
+      const dto = this.modoColaborador() === 'EXISTENTE' && this.empleadoSeleccionadoId()
+        ? {
+            empleadoId: this.empleadoSeleccionadoId()!,
+            username: formVal.username.trim().toLowerCase(),
+            password: formVal.nuevaPassword,
+            rolId: Number(formVal.rolId),
+          }
+        : {
+            nombre: formVal.nombre.trim(),
+            apellido: formVal.apellido.trim(),
+            dpi: formVal.dpi?.trim() || undefined,
+            telefono: formVal.telefono?.trim() || undefined,
+            username: formVal.username.trim().toLowerCase(),
+            password: formVal.nuevaPassword,
+            rolId: Number(formVal.rolId),
+            sucursalId: Number(formVal.sucursalId),
+          };
 
       this.usersService.crearUsuario(dto).subscribe({
         next: () => {

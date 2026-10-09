@@ -61,12 +61,16 @@ export class TransferenciasComponent implements OnInit {
   readonly searchTerm = signal('');
   readonly estadoFilter = signal<string>('TODOS');
 
+  
+
   readonly canManage = computed(() => {
     const rol = this.authService.currentUser()?.rol;
     return rol === 'SUPER_ADMIN' || rol === 'GERENTE_SUCURSAL';
   });
 
   ngOnInit(): void {
+    this.transferenciasService.pageSize.set(5);
+    this.transferenciasService.currentPage.set(1);
     this.cargarDatos();
   }
 
@@ -126,5 +130,14 @@ export class TransferenciasComponent implements OnInit {
 
   getEstadoBadgeClass(estado: string): string {
     return getBadgeColorClass(estado);
+  }
+
+  getMermaUnidades(t: TransferenciaItem): number {
+    if (t.resumen?.totalUnidadesMerma != null && t.resumen.totalUnidadesMerma > 0) {
+      return t.resumen.totalUnidadesMerma;
+    }
+    const env = Number(t.resumen?.totalUnidadesEnviadas) || 0;
+    const rec = Number(t.resumen?.totalUnidadesRecibidas) || 0;
+    return env > rec ? env - rec : 0;
   }
 }

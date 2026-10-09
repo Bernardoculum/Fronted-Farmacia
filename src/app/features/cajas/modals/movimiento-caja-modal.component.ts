@@ -185,12 +185,14 @@ export class MovimientoCajaModalComponent {
       })
       .subscribe({
         next: (res: any) => {
-          this.notification.success(
-            'Movimiento Registrado',
-            `Se registró ${res.tipoMovimiento} por Q ${Number(res.monto).toFixed(2)} correctamente.`
-          );
           this.guardando.set(false);
           this.dialogRef.close(true);
+          setTimeout(() => {
+            this.notification.success(
+              'Movimiento Registrado',
+              `Se registró ${res.tipoMovimiento} por Q ${Number(res.monto).toFixed(2)} correctamente.`
+            );
+          }, 80);
         },
         error: (err: any) => {
           this.notification.error('Error al registrar movimiento', err?.error?.message || 'No se pudo guardar');

@@ -89,12 +89,14 @@ export class PedidosStateService {
     const query = this.busquedaProducto().toLowerCase().trim();
     const list = this.productosService.productos();
     if (!query) return list;
+    const norm = (s?: string | null): string => (s ? s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() : '');
+    const nQuery = norm(query);
     return list.filter(
       (p) =>
-        p.nombre.toLowerCase().includes(query) ||
-        p.codigoProducto.toLowerCase().includes(query) ||
-        (p.categoria && p.categoria.toLowerCase().includes(query)) ||
-        (p.principioActivo && p.principioActivo.toLowerCase().includes(query))
+        norm(p.nombre).includes(nQuery) ||
+        norm(p.codigoProducto).includes(nQuery) ||
+        norm(p.categoria).includes(nQuery) ||
+        norm(p.principioActivo).includes(nQuery)
     );
   });
 

@@ -194,12 +194,14 @@ export class AbrirSesionModalComponent implements OnInit {
     const val = this.form.value;
     this.cajasService.abrirSesion({ cajaId: val.cajaId, saldoInicial: Number(val.saldoInicial) }).subscribe({
       next: (res: any) => {
-        this.notification.success(
-          'Turno de Caja Abierto',
-          `Sesión iniciada con éxito en ${res.caja} con fondo de Q ${Number(res.saldoInicial).toFixed(2)}.`
-        );
         this.guardando.set(false);
         this.dialogRef.close(true);
+        setTimeout(() => {
+          this.notification.success(
+            'Turno de Caja Abierto',
+            `Sesión iniciada con éxito en ${res.caja} con fondo de Q ${Number(res.saldoInicial).toFixed(2)}.`
+          );
+        }, 80);
       },
       error: (err: any) => {
         this.notification.error('Error al abrir turno', err?.error?.message || 'No se pudo abrir la sesión');

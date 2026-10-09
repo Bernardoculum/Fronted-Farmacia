@@ -340,9 +340,6 @@ export class ReportExportService {
 
     ventana.document.close();
     ventana.focus();
-    setTimeout(() => {
-      ventana.print();
-    }, 400);
   }
 
   /**
@@ -519,8 +516,5 @@ export class ReportExportService {
 
     ventana.document.close();
     ventana.focus();
-    setTimeout(() => {
-      ventana.print();
-    }, 400);
   }
 }

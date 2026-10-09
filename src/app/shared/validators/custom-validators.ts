@@ -178,4 +178,20 @@ export class CustomValidators {
     };
   }
 
+  /**
+   * Validador para número de cuenta bancaria: entre 8 y 14 dígitos numéricos.
+   */
+  static cuentaBancaria(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const raw = control.value;
+      if (raw === null || raw === undefined || raw === '') return null;
+      const val = String(raw).trim();
+      if (!val) return null;
+
+      if (!/^[0-9]{8,14}$/.test(val)) {
+        return { cuentaInvalida: 'El número de cuenta debe contener entre 8 y 14 dígitos numéricos.' };
+      }
+      return null;
+    };
+  }
 }

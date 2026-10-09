@@ -57,6 +57,7 @@ export const ENUM_LABELS: Record<string, string> = {
   DESPACHO_TRASLADO: 'Despacho de Traslado',
   MERMA: 'Baja / Merma',
   MERMA_CADUCIDAD: 'Merma por Caducidad',
+  MERMA_TRANSITO: 'Merma en Transporte',
   INICIAL: 'Inventario Inicial',
   APERTURA_INVENTARIO: 'Apertura de Inventario',
 };
@@ -131,6 +132,7 @@ export function getBadgeColorClass(estadoOrEnum: string | null | undefined): str
     case 'VENCIDO':
     case 'MERMA':
     case 'MERMA_CADUCIDAD':
+    case 'MERMA_TRANSITO':
       return 'bg-rose-50 text-rose-700 border-rose-200';
 
     // Gris neutro: Tipos de sucursal y estados informativos

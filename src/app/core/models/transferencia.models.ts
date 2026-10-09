@@ -11,6 +11,7 @@ export interface TransferenciaDetalleItem {
   cantidadSolicitada: number;
   cantidadEnviada: number;
   cantidadRecibida: number;
+  cantidadMerma?: number;
 }
 
 export interface TransferenciaItem {
@@ -37,6 +38,7 @@ export interface TransferenciaItem {
     totalUnidadesSolicitadas: number;
     totalUnidadesEnviadas: number;
     totalUnidadesRecibidas: number;
+    totalUnidadesMerma?: number;
   };
   detalles: TransferenciaDetalleItem[];
 }
@@ -88,7 +90,9 @@ export interface RecibirTransferenciaDto {
   items?: {
     transferenciaDetalleId: number;
     cantidadRecibida: number;
+    motivoMerma?: string;
   }[];
+  observacionRecepcion?: string;
 }
 
 export interface FilterTransferenciaParams {

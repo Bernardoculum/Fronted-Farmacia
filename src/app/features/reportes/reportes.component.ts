@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -18,7 +18,7 @@ import {
 } from '../../core/models/reportes.models';
 import { SucursalOption } from '../../core/models/sucursal.models';
 
-export type TabReporte = 'DASHBOARD' | 'VENTAS' | 'TOP_MEDS' | 'ALERTAS' | 'POWER_BI';
+export type TabReporte = 'DASHBOARD' | 'VENTAS' | 'TOP_MEDS' | 'ALERTAS';
 
 @Component({
   selector: 'app-reportes',
@@ -27,7 +27,7 @@ export type TabReporte = 'DASHBOARD' | 'VENTAS' | 'TOP_MEDS' | 'ALERTAS' | 'POWE
   templateUrl: './reportes.component.html',
 })
 export class ReportesComponent implements OnInit {
-  private readonly sanitizer = inject(DomSanitizer);
+
   private readonly reportesService = inject(ReportesService);
   private readonly sucursalesService = inject(SucursalesService);
   private readonly notification = inject(NotificationService);
@@ -51,18 +51,7 @@ export class ReportesComponent implements OnInit {
   selectedSucursal = signal<number | null>(null);
   filtroRapido = signal<string>('TODO');
 
-  // URL del informe de Power BI (configurable / demostrativa)
-  readonly powerBiUrl = signal<string>(
-    localStorage.getItem('farma_powerbi_url') ||
-      'https://app.powerbi.com/view?r=eyJrIjoiZGE0YWYwMTgtMGQyNy00ODU5LWExYjAtMWYxNWM1ZDRjYzllIiwidCI6IjNmMDEwYzY1LTVhNDQtNDFjZi05YTc1LTI5ZDAyOWU4ZGRlNCIsImMiOjR9'
-  );
 
-  readonly powerBiSafeUrl = computed<SafeResourceUrl>(() => {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(this.powerBiUrl());
-  });
-
-  readonly modalConfigPowerBi = signal<boolean>(false);
-  readonly inputNuevaUrl = signal<string>('');
 
   // Nombre legible de la sucursal activa para reportes
   readonly nombreSucursalActiva = computed(() => {
@@ -163,41 +152,7 @@ export class ReportesComponent implements OnInit {
     this.tabActiva.set(tab);
   }
 
-  /**
-   * Abre Power BI en pantalla completa en una nueva pestaña
-   */
-  
-  abrirConfiguracionPowerBi(): void {
-    this.inputNuevaUrl.set(this.powerBiUrl());
-    this.modalConfigPowerBi.set(true);
-  }
 
-  cerrarConfiguracionPowerBi(): void {
-    this.modalConfigPowerBi.set(false);
-  }
-
-  guardarUrlPowerBi(): void {
-    const url = this.inputNuevaUrl().trim();
-    if (url) {
-      this.powerBiUrl.set(url);
-      localStorage.setItem('farma_powerbi_url', url);
-      this.notification.success('Enlace Actualizado', 'El reporte interactivo de Power BI ha sido vinculado exitosamente.');
-    }
-    this.modalConfigPowerBi.set(false);
-  }
-
-  restablecerUrlDemo(): void {
-    const demoUrl =
-      'https://app.powerbi.com/view?r=eyJrIjoiZGE0YWYwMTgtMGQyNy00ODU5LWExYjAtMWYxNWM1ZDRjYzllIiwidCI6IjNmMDEwYzY1LTVhNDQtNDFjZi05YTc1LTI5ZDAyOWU4ZGRlNCIsImMiOjR9';
-    this.powerBiUrl.set(demoUrl);
-    localStorage.removeItem('farma_powerbi_url');
-    this.notification.info('URL Restablecida', 'Se ha cargado la plantilla interactiva de demostración.');
-    this.modalConfigPowerBi.set(false);
-  }
-
-  abrirPowerBi(): void {
-    window.open(this.powerBiUrl(), '_blank');
-  }
 
   /**
    * Imprime el reporte oficial según la pestaña activa con formato corporativo impecable
@@ -208,7 +163,7 @@ export class ReportesComponent implements OnInit {
     const filtros = this.textoFiltroFechas();
     const dash = this.dashboard();
 
-    if (tab === 'DASHBOARD' || tab === 'POWER_BI') {
+    if (tab === 'DASHBOARD') {
       const kpis = dash?.kpis;
       const ventasCanal = dash?.ventasPorCanal;
       const pos = ventasCanal?.['POS'] || { total: 0, cantidad: 0 };
@@ -216,7 +171,7 @@ export class ReportesComponent implements OnInit {
       const web = ventasCanal?.['WEB'] || { total: 0, cantidad: 0 };
 
       this.reportExportService.imprimirReporteTabular({
-        titulo: tab === 'POWER_BI' ? 'INFORME EJECUTIVO DE BUSINESS INTELLIGENCE (POWER BI)' : 'REPORTE CONSOLIDADO EJECUTIVO & BALANCE FINANCIERO',
+        titulo: 'REPORTE CONSOLIDADO EJECUTIVO & BALANCE FINANCIERO',
         subtitulo: 'Resumen gerencial de ventas, rotación de medicamentos, canales y balance de activos',
         sucursal,
         filtrosAplicados: filtros,
@@ -319,7 +274,7 @@ export class ReportesComponent implements OnInit {
   exportarCsvActual(): void {
     const tab = this.tabActiva();
 
-    if (tab === 'DASHBOARD' || tab === 'POWER_BI') {
+    if (tab === 'DASHBOARD') {
       const kpis = this.dashboard()?.kpis;
       const headers = ['Métrica / Indicador', 'Valor Registrado'];
       const rows = [

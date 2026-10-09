@@ -1,3 +1,74 @@
+<!-- Banner de Estado de Turno de Caja -->
+@if (sesionCajaActiva(); as sesion) {
+  <div class="mb-4 bg-white border border-emerald-200/80 rounded-2xl p-3.5 sm:p-4 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/60 flex items-center justify-center font-bold shrink-0">
+        <mat-icon class="text-xl">point_of_sale</mat-icon>
+      </div>
+      <div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-xs font-black text-slate-800 tracking-tight">Turno de Caja Abierto</span>
+          <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-2xs font-extrabold rounded-full px-2.5 py-0.5 inline-flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            {{ sesion.codigoCaja }} - {{ sesion.nombreCaja }}
+          </span>
+        </div>
+        <p class="text-2xs text-slate-500 mt-0.5">
+          Cajero: <strong class="text-slate-700 font-semibold">{{ sesion.cajero || 'Asignado' }}</strong>
+          &bull; Apertura: <span class="font-medium text-slate-600">{{ sesion.fechaApertura | date:'dd/MM/yyyy HH:mm' }}</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
+      <div class="text-right">
+        <span class="text-2xs font-bold text-slate-400 block uppercase">Fondo Inicial</span>
+        <span class="text-xs font-black text-slate-700 font-mono">Q{{ sesion.saldoInicial | number:'1.2-2' }}</span>
+      </div>
+      <div class="text-right">
+        <span class="text-2xs font-bold text-emerald-600 block uppercase">Ventas en Turno</span>
+        <span class="text-xs font-black text-emerald-700 font-mono">Q{{ sesion.totalIngresos | number:'1.2-2' }}</span>
+      </div>
+      <button
+        type="button"
+        (click)="verificarSesionCaja()"
+        matTooltip="Actualizar estado de caja"
+        class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
+        <mat-icon class="text-base">refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+} @else {
+  <div class="mb-4 bg-amber-50/80 border border-amber-200 rounded-2xl p-3.5 sm:p-4 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-amber-100/80 text-amber-800 border border-amber-300/50 flex items-center justify-center font-bold shrink-0">
+        <mat-icon class="text-xl">lock_clock</mat-icon>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h4 class="text-xs font-black text-amber-900 tracking-tight">Turno de Caja Cerrado</h4>
+          <span class="bg-amber-100 text-amber-800 border border-amber-300 text-2xs font-extrabold rounded-full px-2 py-0.5">
+            Ventas Bloqueadas
+          </span>
+        </div>
+        <p class="text-2xs text-amber-800/90 mt-0.5">
+          No hay una sesión de caja activa en esta sucursal. Debes abrir turno para registrar y cobrar ventas en mostrador.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+      <button
+        type="button"
+        (click)="abrirTurnoCaja()"
+        class="w-full sm:w-auto px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs hover:shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+        <mat-icon class="text-sm">key</mat-icon>
+        <span>Abrir Turno de Caja</span>
+      </button>
+    </div>
+  </div>
+}
+
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
         
         <!-- Catálogo / Búsqueda POS (Estilo Compacto y Bajo Búsqueda) -->
@@ -203,17 +274,32 @@
 
               <button
                 type="button"
-                [disabled]="carrito().length === 0 || procesandoVenta()"
+                [disabled]="carrito().length === 0 || procesandoVenta() || !sesionCajaActiva()"
                 (click)="cobrarVentaMostrador()"
-                class="w-full py-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-lg shadow-teal-600/20 transition-all flex items-center justify-center gap-2">
+                [ngClass]="sesionCajaActiva() ? 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 shadow-lg shadow-teal-600/20' : 'bg-slate-300 text-slate-500 cursor-not-allowed'"
+                class="w-full py-3 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2">
                 @if (procesandoVenta()) {
                   <span class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                   <span>Procesando...</span>
+                } @else if (!sesionCajaActiva()) {
+                  <mat-icon>lock</mat-icon>
+                  <span>Caja Cerrada (Abrir Turno)</span>
                 } @else {
                   <mat-icon>check_circle</mat-icon>
                   <span>Cobrar e Imprimir Ticket (Q{{ totalVenta() | number:'1.2-2' }})</span>
                 }
               </button>
+              @if (!sesionCajaActiva()) {
+                <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-2 mt-1">
+                  <span class="text-2xs font-semibold text-amber-800">Se requiere turno de caja para cobrar.</span>
+                  <button
+                    type="button"
+                    (click)="abrirTurnoCaja()"
+                    class="text-2xs font-bold text-emerald-700 hover:text-emerald-800 underline cursor-pointer">
+                    Abrir Turno
+                  </button>
+                </div>
+              }
             </div>
           </div>
         </div>

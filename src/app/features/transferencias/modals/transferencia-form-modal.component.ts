@@ -638,18 +638,19 @@ export class TransferenciaFormModalComponent implements OnInit {
 
     this.guardando.set(true);
 
-    // Formato formal de trazabilidad: solicitante, rol, sede y fecha
     const u = this.authService.currentUser();
-    const nombreOp = u?.nombre || u?.username || 'Usuario';
-    const rolOp = this.getFriendlyRoleName();
-    const sedeOp = this.getUserBranchName();
+    const nombreCompleto = [u?.nombre, u?.apellido].filter(Boolean).join(' ').trim() || u?.username || 'Usuario';
     const userObs = this.observacion.trim();
 
     let obsFinal = '';
     if (this.isModoSolicitud()) {
-      obsFinal = `[SOLICITUD DE REABASTECIMIENTO - Solicitado por: ${nombreOp} (${rolOp}) - Sede: ${sedeOp}]: ${userObs || 'Reabastecimiento de existencias'}`;
+      obsFinal = userObs
+        ? `${userObs} (Solicitado por: ${nombreCompleto})`
+        : `Solicitud de reabastecimiento generada por ${nombreCompleto}`;
     } else {
-      obsFinal = `[DESPACHO DIRECTO - Despachado por: ${nombreOp} (${rolOp})]: ${userObs || 'Despacho de existencias'}`;
+      obsFinal = userObs
+        ? `${userObs} (Despachado por: ${nombreCompleto})`
+        : `Despacho de existencias realizado por ${nombreCompleto}`;
     }
 
     this.transferenciasService
@@ -680,7 +681,8 @@ export class TransferenciaFormModalComponent implements OnInit {
 
   getUserDisplayName(): string {
     const u = this.authService.currentUser();
-    return u?.nombre || u?.username || 'Usuario';
+    const nombreCompleto = [u?.nombre, u?.apellido].filter(Boolean).join(' ').trim();
+    return nombreCompleto || u?.username || 'Usuario';
   }
 
   getFriendlyRoleName(): string {

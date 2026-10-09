@@ -82,6 +82,8 @@ export class LotesComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.lotesService.pageSize.set(5);
+    this.lotesService.currentPage.set(1);
     if (!this.authService.hasGlobalBranchAccess() && this.authService.userSucursalId()) {
       this.sucursalIdFilter.set(this.authService.userSucursalId());
     }
@@ -115,6 +117,11 @@ export class LotesComponent implements OnInit {
     this.sucursalIdFilter.set(sucursalId ? Number(sucursalId) : null);
     this.lotesService.currentPage.set(1);
     this.cargarDatos();
+  }
+
+  getDistribucionTooltip(lote: LoteItem): string {
+    if (!lote.inventarios || lote.inventarios.length === 0) return 'Sin existencias asignadas';
+    return lote.inventarios.map((i) => `${i.sucursal}: ${i.disponible} cajas`).join(' | ');
   }
 
   getStockEnSede(lote: LoteItem): number {

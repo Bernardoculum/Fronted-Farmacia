@@ -135,10 +135,10 @@ import { FormatEnumPipe, getBadgeColorClass } from '../../../shared/pipes/format
         @if (data.observacion) {
           <div class="mt-3 p-3 bg-slate-50 border border-slate-200/90 rounded-xl text-xs flex items-start gap-2.5">
             <div class="w-7 h-7 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center shrink-0 border border-sky-200 shadow-2xs">
-              <mat-icon class="!text-sm !w-4 !h-4">assignment_ind</mat-icon>
+              <mat-icon class="!text-sm !w-4 !h-4">notes</mat-icon>
             </div>
             <div class="min-w-0 flex-1">
-              <span class="text-3xs uppercase font-extrabold text-slate-400 block tracking-wider">Trazabilidad de la Solicitud / Envío</span>
+              <span class="text-3xs uppercase font-extrabold text-slate-400 block tracking-wider">Observaciones y Notas</span>
               <p class="text-xs font-semibold text-slate-800 mt-0.5 leading-relaxed">
                 {{ data.observacion }}
               </p>
@@ -146,6 +146,24 @@ import { FormatEnumPipe, getBadgeColorClass } from '../../../shared/pipes/format
           </div>
         }
       </div>
+
+      <!-- Alerta Destacada de Merma / Pérdida en Tránsito si ocurrió -->
+      @if (data.estado === 'RECIBIDA' && totalMerma() > 0) {
+        <div class="mb-3.5 p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-3 shadow-2xs">
+          <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 border border-rose-200 flex items-center justify-center shrink-0">
+            <mat-icon class="!text-lg !w-5 !h-5">broken_image</mat-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <span class="text-3xs uppercase font-extrabold text-rose-600 block tracking-wider">
+              Discrepancia / Merma Registrada en Tránsito (Asiento en Kardex)
+            </span>
+            <p class="text-xs font-semibold text-rose-950 mt-0.5 leading-relaxed">
+              De <strong>{{ data.resumen?.totalUnidadesEnviadas || 0 }} u.</strong> despachadas desde {{ data.sucursalOrigen?.nombre }}, únicamente se recibieron <strong>{{ data.resumen?.totalUnidadesRecibidas || 0 }} u.</strong> en buen estado.
+              Se asentó una pérdida de <span class="text-rose-700 underline font-black">{{ totalMerma() }} u. por merma en transporte</span> en el libro mayor de Kardex.
+            </p>
+          </div>
+        </div>
+      }
 
       <!-- Tabla de Medicamentos Directa -->
       <div class="border border-slate-200 rounded-xl overflow-hidden mb-4 shadow-2xs">
@@ -206,21 +224,36 @@ import { FormatEnumPipe, getBadgeColorClass } from '../../../shared/pipes/format
                   <!-- Casilla de Cantidad Recibida -->
                   <td class="py-2.5 px-3.5 text-center whitespace-nowrap">
                     @if (canRecibir()) {
-                      <div class="inline-flex items-center gap-1">
-                        <input
-                          type="number"
-                          min="0"
-                          [max]="det.cantidadEnviada"
-                          [value]="cantidadesRecepcion()[det.transferenciaDetalleId] ?? det.cantidadEnviada"
-                          (input)="setCantidadRecepcion(det.transferenciaDetalleId, $any($event.target).value)"
-                          class="w-18 text-center font-bold text-sm bg-white border border-slate-300 rounded-lg py-1 px-1.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                        />
-                        <span class="text-2xs text-slate-400">u.</span>
+                      <div class="inline-flex flex-col items-center gap-1">
+                        <div class="inline-flex items-center gap-1">
+                          <input
+                            type="number"
+                            min="0"
+                            [max]="det.cantidadEnviada"
+                            [value]="cantidadesRecepcion()[det.transferenciaDetalleId] ?? det.cantidadEnviada"
+                            (input)="setCantidadRecepcion(det.transferenciaDetalleId, $any($event.target).value)"
+                            class="w-18 text-center font-bold text-sm bg-white border border-slate-300 rounded-lg py-1 px-1.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                          />
+                          <span class="text-2xs text-slate-400">u.</span>
+                        </div>
+                        @if ((cantidadesRecepcion()[det.transferenciaDetalleId] ?? det.cantidadEnviada) < det.cantidadEnviada) {
+                          <span class="text-3xs font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+                            Merma: {{ det.cantidadEnviada - (cantidadesRecepcion()[det.transferenciaDetalleId] ?? det.cantidadEnviada) }} u.
+                          </span>
+                        }
                       </div>
                     } @else {
-                      <span class="font-bold text-sm" [ngClass]="det.cantidadRecibida > 0 ? 'text-emerald-700' : 'text-slate-400'">
-                        {{ det.cantidadRecibida }} u.
-                      </span>
+                      <div class="flex flex-col items-center">
+                        <span class="font-bold text-sm" [ngClass]="det.cantidadRecibida > 0 ? 'text-emerald-700' : 'text-slate-400'">
+                          {{ det.cantidadRecibida }} u.
+                        </span>
+                        @if (data.estado === 'RECIBIDA' && (det.cantidadMerma || (det.cantidadEnviada - det.cantidadRecibida) > 0)) {
+                          <span class="inline-flex items-center gap-1 text-3xs font-extrabold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full mt-1 shadow-2xs">
+                            <mat-icon class="!text-3xs !w-3 !h-3">broken_image</mat-icon>
+                            <span>Merma: {{ det.cantidadMerma || (det.cantidadEnviada - det.cantidadRecibida) }} u. rotas</span>
+                          </span>
+                        }
+                      </div>
                     }
                   </td>
                 </tr>
@@ -312,18 +345,42 @@ import { FormatEnumPipe, getBadgeColorClass } from '../../../shared/pipes/format
         </div>
       }
 
-      <!-- Barra de Confirmación Inline de Recepción (Cero Modales Encimados) -->
+      <!-- Barra de Confirmación Inline de Recepción -->
       @if (confirmandoRecepcion()) {
-        <div class="p-3 bg-emerald-50 border border-emerald-300 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs animate-in fade-in duration-200">
-          <div class="flex items-center gap-2 text-xs text-emerald-950 font-bold">
-            <mat-icon class="text-emerald-700">check_circle</mat-icon>
-            <span>¿Confirmas la recepción física del pedido e ingreso a <strong>{{ data.sucursalDestino?.nombre }}</strong>?</span>
+        <div class="p-3 bg-emerald-50 border border-emerald-300 rounded-2xl flex flex-col gap-2.5 shadow-xs animate-in fade-in duration-200">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-2 text-xs text-emerald-950 font-bold">
+              <mat-icon class="text-emerald-700">check_circle</mat-icon>
+              <span>¿Confirmas la recepción física del pedido e ingreso a <strong>{{ data.sucursalDestino?.nombre }}</strong>?</span>
+            </div>
+            @if (tieneMermaPendiente()) {
+              <span class="px-2.5 py-0.5 rounded-full text-2xs font-extrabold bg-rose-100 text-rose-800 border border-rose-300 self-start sm:self-auto">
+                ⚠️ Se registrará merma de {{ totalMermaPendiente() }} u.
+              </span>
+            }
           </div>
-          <div class="flex items-center gap-2 w-full sm:w-auto">
+
+          @if (tieneMermaPendiente()) {
+            <div class="bg-white p-2.5 rounded-xl border border-rose-200 flex flex-col gap-1.5">
+              <label class="text-2xs font-bold text-slate-700 flex items-center gap-1">
+                <mat-icon class="!text-xs !w-3 !h-3 text-rose-600">report_problem</mat-icon>
+                <span>Motivo de rotura / producto dañado en transporte (Asiento en Kardex):</span>
+              </label>
+              <input
+                type="text"
+                [value]="motivoMermaTexto()"
+                (input)="motivoMermaTexto.set($any($event.target).value)"
+                placeholder="Ej. 2 unidades venían quebradas por golpe en el flete..."
+                class="w-full text-xs font-medium border border-slate-300 rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-rose-500 focus:outline-none"
+              />
+            </div>
+          }
+
+          <div class="flex items-center justify-end gap-2">
             <button
               type="button"
               (click)="confirmandoRecepcion.set(false)"
-              class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs cursor-pointer"
+              class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs cursor-pointer"
             >
               Volver
             </button>
@@ -331,7 +388,7 @@ import { FormatEnumPipe, getBadgeColorClass } from '../../../shared/pipes/format
               type="button"
               (click)="confirmarRecepcionDirecta()"
               [disabled]="procesando()"
-              class="flex-1 sm:flex-initial px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs cursor-pointer shadow-sm flex items-center justify-center gap-1.5"
+              class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs cursor-pointer shadow-sm flex items-center justify-center gap-1.5"
             >
               <mat-icon class="!text-base !w-4 !h-4">done_all</mat-icon>
               <span>{{ procesando() ? 'Ingresando...' : '✓ Sí, Confirmar Recepción' }}</span>
@@ -408,6 +465,31 @@ export class TransferenciaDetalleModalComponent implements OnInit {
   readonly confirmandoDespacho = signal(false);
   readonly confirmandoRecepcion = signal(false);
   readonly errorMensaje = signal<string | null>(null);
+  readonly motivoMermaTexto = signal('');
+
+  readonly totalMerma = computed(() => {
+    if (this.data.resumen?.totalUnidadesMerma != null && this.data.resumen.totalUnidadesMerma > 0) {
+      return this.data.resumen.totalUnidadesMerma;
+    }
+    let m = 0;
+    (this.data.detalles || []).forEach((d) => {
+      const diff = Number(d.cantidadEnviada || 0) - Number(d.cantidadRecibida || 0);
+      if (diff > 0) m += diff;
+    });
+    return m;
+  });
+
+  readonly totalMermaPendiente = computed(() => {
+    let m = 0;
+    (this.data.detalles || []).forEach((d) => {
+      const rec = this.cantidadesRecepcion()[d.transferenciaDetalleId] ?? d.cantidadEnviada;
+      const diff = Number(d.cantidadEnviada || 0) - Number(rec);
+      if (diff > 0) m += diff;
+    });
+    return m;
+  });
+
+  readonly tieneMermaPendiente = computed(() => this.totalMermaPendiente() > 0);
 
   // Mapas reactivos de cantidades
   readonly cantidadesEnvio = signal<{ [detalleId: number]: number }>({});
@@ -503,13 +585,22 @@ export class TransferenciaDetalleModalComponent implements OnInit {
   }
 
   confirmarRecepcionDirecta(): void {
-    const items = (this.data.detalles || []).map((det: TransferenciaDetalleItem) => ({
-      transferenciaDetalleId: det.transferenciaDetalleId,
-      cantidadRecibida: Number(this.cantidadesRecepcion()?.[det.transferenciaDetalleId] ?? det.cantidadEnviada ?? det.cantidadSolicitada),
-    }));
+    const items = (this.data.detalles || []).map((det: TransferenciaDetalleItem) => {
+      const cantRec = Number(this.cantidadesRecepcion()?.[det.transferenciaDetalleId] ?? det.cantidadEnviada ?? det.cantidadSolicitada);
+      const cantEnv = Number(det.cantidadEnviada || 0);
+      return {
+        transferenciaDetalleId: det.transferenciaDetalleId,
+        cantidadRecibida: cantRec,
+        motivoMerma: cantRec < cantEnv ? (this.motivoMermaTexto().trim() || 'Producto quebrado o dañado en transporte') : undefined,
+      };
+    });
+
+    const observacionRecepcion = this.tieneMermaPendiente()
+      ? (this.motivoMermaTexto().trim() || 'Merma por producto dañado o quebrado en transporte')
+      : undefined;
 
     this.procesando.set(true);
-    this.transferenciasService.recibirTransferencia(this.data.transferenciaId, { items }).subscribe({
+    this.transferenciasService.recibirTransferencia(this.data.transferenciaId, { items, observacionRecepcion }).subscribe({
       next: () => {
         this.procesando.set(false);
         this.dialogRef.close(true);

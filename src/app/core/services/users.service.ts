@@ -6,6 +6,7 @@ import {
   UserItem,
   RolOption,
   CreateUserDto,
+  ColaboradorDisponible,
   UpdateUserDto,
   FilterUserParams,
   PaginatedUsersResponse,
@@ -65,6 +66,10 @@ export class UsersService {
         error: () => this.loading.set(false),
       })
     );
+  }
+
+  getColaboradoresDisponibles(): Observable<ColaboradorDisponible[]> {
+    return this.http.get<ColaboradorDisponible[]>(`${this.apiUrl}/colaboradores-disponibles`);
   }
 
   cargarRoles(): Observable<RolOption[]> {

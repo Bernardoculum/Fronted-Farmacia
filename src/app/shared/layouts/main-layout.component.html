@@ -59,7 +59,7 @@
           routerLinkActive="bg-emerald-50 text-emerald-800 border-emerald-300 font-bold" 
           class="px-3.5 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-600 font-semibold text-xs flex items-center gap-2 transition-all shadow-2xs">
           <mat-icon class="text-emerald-600 !w-4 !h-4 !text-base flex items-center justify-center">dashboard</mat-icon>
-          <span>Panel de Control (BI)</span>
+          <span>MODULOS SISTEMA</span>
         </a>
       </div>
     }
@@ -68,12 +68,7 @@
     <div class="flex items-center gap-2 sm:gap-3">
       
       <!-- Badge de Sucursal Activa -->
-      <div 
-        class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 max-w-[220px]"
-        [matTooltip]="getUserSucursal()">
-        <mat-icon class="text-emerald-600 !w-4 !h-4 !text-base shrink-0 flex items-center justify-center">storefront</mat-icon>
-        <span class="truncate text-2xs uppercase tracking-wide">{{ getUserSucursal() }}</span>
-      </div>
+    
 
       <!-- Campana de Alertas / Notificaciones -->
       <button 
@@ -247,7 +242,7 @@
                 class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
                 <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center shrink-0">point_of_sale</mat-icon>
                 @if (!layoutService.isCollapsed()) {
-                  <span class="truncate">Ventas POS</span>
+                  <span class="truncate">Ventas</span>
                 }
               </a>
             }
@@ -263,7 +258,7 @@
                 class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
                 <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center shrink-0">support_agent</mat-icon>
                 @if (!layoutService.isCollapsed()) {
-                  <span class="truncate">Call Center (Despacho)</span>
+                  <span class="truncate">Call Center</span>
                 }
               </a>
             }
@@ -295,7 +290,7 @@
                 class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
                 <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center shrink-0">payments</mat-icon>
                 @if (!layoutService.isCollapsed()) {
-                  <span class="truncate">Cajas & Arqueo</span>
+                  <span class="truncate">Cajas y Arqueo</span>
                 }
               </a>
             }
@@ -359,7 +354,7 @@
                 class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
                 <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-lg !w-5 !h-5 flex items-center justify-center shrink-0">inventory_2</mat-icon>
                 @if (!layoutService.isCollapsed()) {
-                  <span class="truncate">Lotes & Vencimiento</span>
+                  <span class="truncate">Lotes y Inventario</span>
                 }
               </a>
             }
@@ -477,7 +472,7 @@
                   routerLinkActive="bg-emerald-50 text-emerald-800 font-bold border-r-3 border-emerald-600 shadow-2xs" 
                   class="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
                   <mat-icon class="text-slate-400 group-hover:text-emerald-600 text-base !w-4 !h-4 flex items-center justify-center shrink-0">insights</mat-icon>
-                  <span class="truncate">Reportería (BI)</span>
+                  <span class="truncate">Reportería</span>
                 </a>
               }
             </nav>
@@ -597,15 +592,7 @@
 
     <!-- Pie del Sidebar: Versión y Estado -->
     @if (!layoutService.isCollapsed()) {
-      <div class="p-3 border-t border-slate-100 bg-slate-50/50">
-        <div class="flex items-center justify-between text-3xs text-slate-400">
-          <span class="font-bold">v2.4 Pro Edition</span>
-          <span class="flex items-center gap-1 font-semibold text-emerald-600">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            Online
-          </span>
-        </div>
-      </div>
+    
     }
 
   </aside>

@@ -127,4 +127,14 @@ export class CajasService {
       tap(() => this.cargarSesiones(this.currentFilters()).subscribe())
     );
   }
+
+  /**
+   * Obtener sesion activa actualmente abierta en la sucursal del usuario
+   */
+  getSesionActiva(sucursalId?: number): Observable<any> {
+    let params = new HttpParams();
+    if (sucursalId) params = params.set('sucursalId', sucursalId.toString());
+    return this.http.get<any>(`${this.apiUrl}/sesion-activa`, { params });
+  }
+
 }

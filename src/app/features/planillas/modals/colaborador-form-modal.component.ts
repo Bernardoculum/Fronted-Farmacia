@@ -316,7 +316,18 @@ import { SucursalOption } from '../../../core/models/sucursal.models';
               <div>
                 <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">No. de Cuenta</label>
                 <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full colab-field">
-                  <input matInput type="text" formControlName="numeroCuenta" placeholder="Ej. 028-123456-7" />
+                  <input
+                    matInput
+                    type="text"
+                    appOnlyNumbers
+                    maxDigits="14"
+                    maxlength="14"
+                    formControlName="numeroCuenta"
+                    placeholder="Ej. 0281234567 (8 a 14 dígitos)"
+                  />
+                  @if (form.get('numeroCuenta')?.hasError('cuentaInvalida') && form.get('numeroCuenta')?.touched) {
+                    <mat-error class="text-2xs font-semibold text-rose-600">Debe tener entre 8 y 14 dígitos numéricos</mat-error>
+                  }
                   <mat-icon matPrefix class="text-slate-400 !text-sm mr-1">credit_card</mat-icon>
                 </mat-form-field>
               </div>
@@ -432,7 +443,7 @@ export class ColaboradorFormModalComponent implements OnInit {
     noAfiliacionIgss: ['', [Validators.required, Validators.pattern(/^[0-9]{4,15}$/)]],
     formaPago: ['TRANSFERENCIA', [Validators.required]],
     banco: [''],
-    numeroCuenta: [''],
+    numeroCuenta: ['', [CustomValidators.cuentaBancaria()]],
     email: ['', [Validators.email]],
     puestoId: [null, [Validators.required]],
     sucursalId: [null, [Validators.required]],

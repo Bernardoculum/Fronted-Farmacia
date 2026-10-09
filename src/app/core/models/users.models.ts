@@ -19,6 +19,20 @@ export interface UserItem {
   puestoNombre?: string;
 }
 
+export interface ColaboradorDisponible {
+  empleadoId: number;
+  nombre: string;
+  apellido: string;
+  nombreCompleto: string;
+  dpi: string;
+  telefono: string;
+  email: string;
+  sucursalId: number | null;
+  sucursalNombre: string;
+  puestoId: number | null;
+  puestoNombre: string;
+}
+
 export interface RolOption {
   rolId: number;
   nombre: string;
@@ -27,14 +41,15 @@ export interface RolOption {
 }
 
 export interface CreateUserDto {
-  nombre: string;
-  apellido: string;
+  empleadoId?: number;
+  nombre?: string;
+  apellido?: string;
   dpi?: string;
   telefono?: string;
   username: string;
   password?: string;
   rolId: number;
-  sucursalId: number;
+  sucursalId?: number;
   puestoId?: number;
 }
 

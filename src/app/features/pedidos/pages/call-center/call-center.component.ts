@@ -1,4 +1,4 @@
-import { Component, inject, computed, signal } from '@angular/core';
+import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -23,7 +23,11 @@ import { AuthService } from '../../../../core/services/auth.service';
   ],
   templateUrl: './call-center.component.html',
 })
-export class CallCenterComponent {
+export class CallCenterComponent implements OnInit {
+  ngOnInit(): void {
+    this.state.inicializar();
+    this.productosService.cargarProductos({ limit: 100 }).subscribe();
+  }
   readonly state = inject(PedidosStateService);
   readonly productosService = inject(ProductosService);
   readonly pedidosService = inject(PedidosService);

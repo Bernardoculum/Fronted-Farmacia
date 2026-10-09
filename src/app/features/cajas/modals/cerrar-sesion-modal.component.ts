@@ -52,7 +52,7 @@ import { OnlyNumbersDirective } from '../../../shared/directives/only-numbers.di
       </div>
 
       <!-- Caja de Arqueo Físico -->
-      <form [formGroup]="form" (ngSubmit)="confirmarCierre()" class="mt-5 space-y-4">
+      <form [formGroup]="form" (ngSubmit)="solicitarCierre()" class="mt-5 space-y-4">
         <!-- Efectivo Contado Físicamente -->
         <div class="p-4 rounded-xl border-2 border-slate-200 bg-slate-50/40 space-y-3">
           <div class="flex items-center justify-between">
@@ -116,24 +116,78 @@ import { OnlyNumbersDirective } from '../../../shared/directives/only-numbers.di
           ></textarea>
         </div>
 
-        <!-- Acciones -->
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
-          <button
-            type="button"
-            (click)="cerrar()"
-            class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 cursor-pointer transition-colors"
+        <!-- Barra de Confirmación Inline de Cierre (Cero Modales Encimados) -->
+        @if (confirmandoCierre()) {
+          <div
+            class="p-4 rounded-2xl border flex flex-col gap-3 shadow-xs animate-in fade-in duration-200"
+            [ngClass]="{
+              'bg-emerald-50 border-emerald-300': diferencia() === 0,
+              'bg-sky-50 border-sky-300': diferencia() > 0,
+              'bg-rose-50 border-rose-300': diferencia() < 0
+            }"
           >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            [disabled]="form.invalid || guardando()"
-            class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
-          >
-            <mat-icon class="!text-sm !w-4 !h-4">lock</mat-icon>
-            <span>{{ guardando() ? 'Cerrando...' : 'Confirmar Cierre de Turno' }}</span>
-          </button>
-        </div>
+            <div class="flex items-start gap-2.5">
+              <mat-icon
+                class="!text-lg !w-5 !h-5 shrink-0 mt-0.5"
+                [ngClass]="{
+                  'text-emerald-700': diferencia() === 0,
+                  'text-sky-700': diferencia() > 0,
+                  'text-rose-700': diferencia() < 0
+                }"
+              >
+                {{ diferencia() < 0 ? 'error_outline' : (diferencia() > 0 ? 'info' : 'check_circle') }}
+              </mat-icon>
+              <div class="text-xs">
+                <div class="font-black text-slate-800 text-xs">
+                  ¿Confirmar cierre definitivo de este turno?
+                </div>
+                <div class="text-3xs text-slate-600 mt-0.5 leading-relaxed">
+                  {{ mensajeResumenCierre() }} Una vez cerrada la sesión, no se podrán registrar más cobros ni movimientos en este turno.
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200/60">
+              <button
+                type="button"
+                (click)="confirmandoCierre.set(false)"
+                [disabled]="guardando()"
+                class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs cursor-pointer transition-colors"
+              >
+                Volver a Modificar
+              </button>
+              <button
+                type="button"
+                (click)="ejecutarCierreDirecto()"
+                [disabled]="guardando()"
+                class="px-5 py-2 rounded-xl font-black text-xs text-white shadow-sm inline-flex items-center gap-1.5 cursor-pointer transition-all"
+                [ngClass]="diferencia() < 0 ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'"
+              >
+                <mat-icon class="!text-sm !w-4 !h-4">lock</mat-icon>
+                <span>{{ guardando() ? 'Cerrando Turno...' : '✓ Sí, Cerrar Turno Ahora' }}</span>
+              </button>
+            </div>
+          </div>
+        } @else {
+          <!-- Acciones Habituales -->
+          <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
+            <button
+              type="button"
+              (click)="cerrar()"
+              class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 cursor-pointer transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              [disabled]="form.invalid || guardando()"
+              class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
+            >
+              <mat-icon class="!text-sm !w-4 !h-4">lock</mat-icon>
+              <span>Revisar y Cerrar Turno</span>
+            </button>
+          </div>
+        }
       </form>
     </div>
   `,
@@ -146,6 +200,7 @@ export class CerrarSesionModalComponent implements OnInit {
   private readonly notification = inject(NotificationService);
 
   readonly guardando = signal<boolean>(false);
+  readonly confirmandoCierre = signal<boolean>(false);
   readonly efectivoEsperado = signal<number>(0);
 
   readonly form: FormGroup = this.fb.group({
@@ -175,22 +230,20 @@ export class CerrarSesionModalComponent implements OnInit {
     });
   }
 
-  async confirmarCierre(): Promise<void> {
+  solicitarCierre(): void {
     if (this.form.invalid || this.guardando()) return;
+    this.confirmandoCierre.set(true);
+  }
 
+  mensajeResumenCierre(): string {
     const diff = this.diferencia();
-    let msg = `El arqueo registra un cuadre exacto (Q ${this.efectivoEsperado().toFixed(2)}).`;
-    if (diff > 0) msg = `Se registrará un SOBRANTE de Q ${diff.toFixed(2)}.`;
-    if (diff < 0) msg = `Se registrará un FALTANTE de Q ${Math.abs(diff).toFixed(2)}.`;
+    if (diff === 0) return `El arqueo registra un cuadre exacto (Q ${this.efectivoEsperado().toFixed(2)}).`;
+    if (diff > 0) return `Se registrará un SOBRANTE de Q ${diff.toFixed(2)}.`;
+    return `Se registrará un FALTANTE de Q ${Math.abs(diff).toFixed(2)}.`;
+  }
 
-    const ok = await this.notification.confirm({
-      title: '¿Confirmar Cierre de Caja?',
-      text: `${msg} Una vez cerrada la sesión, no se podrán registrar más cobros ni movimientos en este turno.`,
-      confirmText: 'Sí, Cerrar Turno',
-      type: diff < 0 ? 'danger' : 'info',
-    });
-    if (!ok) return;
-
+  ejecutarCierreDirecto(): void {
+    if (this.form.invalid || this.guardando()) return;
     this.guardando.set(true);
     const val = this.form.value;
 
@@ -201,16 +254,19 @@ export class CerrarSesionModalComponent implements OnInit {
       })
       .subscribe({
         next: (res: any) => {
-          this.notification.success(
-            'Turno Cerrado Exitosamente',
-            `Sesión #${this.data.sesionCajaId} finalizada. Diferencia: Q ${Number(res.diferencia || 0).toFixed(2)} (${res.estadoArqueo}).`
-          );
           this.guardando.set(false);
           this.dialogRef.close(true);
+          setTimeout(() => {
+            this.notification.success(
+              'Turno Cerrado Exitosamente',
+              `Sesión #${this.data.sesionCajaId} finalizada. Diferencia: Q ${Number(res.diferencia || 0).toFixed(2)} (${res.estadoArqueo}).`
+            );
+          }, 80);
         },
         error: (err: any) => {
-          this.notification.error('Error al cerrar turno', err?.error?.message || 'No se pudo cerrar la sesión');
           this.guardando.set(false);
+          this.confirmandoCierre.set(false);
+          this.notification.error('Error al cerrar turno', err?.error?.message || 'No se pudo cerrar la sesión');
         },
       });
   }
