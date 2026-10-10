@@ -194,4 +194,20 @@ export class CustomValidators {
       return null;
     };
   }
+  /**
+   * Validador estricto para NIT en Guatemala (Ej. 1234567-8, 12345678 o CF).
+   */
+  static nitGuatemala(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const raw = control.value;
+      if (raw === null || raw === undefined || raw === '') return null;
+      const val = String(raw).trim().toUpperCase();
+      if (!val) return null;
+      if (val === 'CF' || val === 'C/F') return null;
+      if (!/^[0-9]{4,10}(-?[0-9K])?$/.test(val)) {
+        return { nitInvalido: 'NIT no válido (Ej. 1234567-8 o CF, máx 10 dígitos)' };
+      }
+      return null;
+    };
+  }
 }

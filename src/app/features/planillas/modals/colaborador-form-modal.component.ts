@@ -143,10 +143,17 @@ import { SucursalOption } from '../../../core/models/sucursal.models';
             <div>
               <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">NIT</label>
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full colab-field">
-                <input matInput type="text" formControlName="nit" placeholder="Ej. 1234567-8 o CF" />
+                <input
+                  matInput
+                  type="text"
+                  formControlName="nit"
+                  maxlength="12"
+                  (input)="onNitInput($event)"
+                  placeholder="Ej. 1234567-8 o CF"
+                />
                 <mat-icon matPrefix class="text-slate-400 !text-sm mr-1">receipt</mat-icon>
-                @if (form.get('nit')?.hasError('pattern') && form.get('nit')?.touched) {
-                  <mat-error class="text-2xs font-semibold text-rose-600">NIT inválido</mat-error>
+                @if (form.get('nit')?.hasError('nitInvalido') && form.get('nit')?.touched) {
+                  <mat-error class="text-2xs font-semibold text-rose-600">NIT inválido (Ej. 1234567-8 o CF)</mat-error>
                 }
               </mat-form-field>
             </div>
@@ -253,6 +260,8 @@ import { SucursalOption } from '../../../core/models/sucursal.models';
                   formControlName="salarioActual"
                   appOnlyNumbers
                   [allowDecimals]="true"
+                  maxDigits="8"
+                  maxlength="9"
                   placeholder="3500.00"
                 />
                 @if (form.get('salarioActual')?.hasError('required') && form.get('salarioActual')?.touched) {
@@ -261,6 +270,9 @@ import { SucursalOption } from '../../../core/models/sucursal.models';
                 @if ((form.get('salarioActual')?.hasError('min') || form.get('salarioActual')?.hasError('montoInvalido')) && form.get('salarioActual')?.touched) {
                   <mat-error class="text-2xs font-medium">Monto mayor a 0</mat-error>
                 }
+                @if (form.get('salarioActual')?.hasError('max') && form.get('salarioActual')?.touched) {
+                  <mat-error class="text-2xs font-semibold text-rose-600">Máximo Q 150,000.00</mat-error>
+                }
               </mat-form-field>
             </div>
 
@@ -268,13 +280,21 @@ import { SucursalOption } from '../../../core/models/sucursal.models';
             <div>
               <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">No. Afiliación IGSS *</label>
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full colab-field">
-                <input matInput type="text" formControlName="noAfiliacionIgss" appOnlyNumbers placeholder="Ej. 1098765432" />
+                <input
+                  matInput
+                  type="text"
+                  formControlName="noAfiliacionIgss"
+                  appOnlyNumbers
+                  maxDigits="11"
+                  maxlength="11"
+                  placeholder="Ej. 1098765432"
+                />
                 <mat-icon matPrefix class="text-slate-400 !text-sm mr-1">health_and_safety</mat-icon>
                 @if (form.get('noAfiliacionIgss')?.hasError('required') && form.get('noAfiliacionIgss')?.touched) {
                   <mat-error class="text-2xs font-medium">No. de IGSS obligatorio</mat-error>
                 }
                 @if (form.get('noAfiliacionIgss')?.hasError('pattern') && form.get('noAfiliacionIgss')?.touched) {
-                  <mat-error class="text-2xs font-semibold text-rose-600">Solo números válidos</mat-error>
+                  <mat-error class="text-2xs font-semibold text-rose-600">Debe tener entre 6 y 11 dígitos</mat-error>
                 }
               </mat-form-field>
             </div>
@@ -439,15 +459,15 @@ export class ColaboradorFormModalComponent implements OnInit {
     dpi: ['', [Validators.required, CustomValidators.dpiGuatemala()]],
     telefono: ['', [CustomValidators.telefonoGuatemala()]],
     fechaIngreso: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    nit: ['', [Validators.pattern(/^[0-9]+(-?[0-9kK])?$/)]],
-    noAfiliacionIgss: ['', [Validators.required, Validators.pattern(/^[0-9]{4,15}$/)]],
+    nit: ['', [CustomValidators.nitGuatemala()]],
+    noAfiliacionIgss: ['', [Validators.required, Validators.pattern(/^[0-9]{6,11}$/)]],
     formaPago: ['TRANSFERENCIA', [Validators.required]],
     banco: [''],
     numeroCuenta: ['', [CustomValidators.cuentaBancaria()]],
     email: ['', [Validators.email]],
     puestoId: [null, [Validators.required]],
     sucursalId: [null, [Validators.required]],
-    salarioActual: [3500, [Validators.required, CustomValidators.montoPositivo()]],
+    salarioActual: [3500, [Validators.required, CustomValidators.montoPositivo(), Validators.max(150000)]],
   });
 
   // Proyección reactiva
@@ -461,6 +481,16 @@ export class ColaboradorFormModalComponent implements OnInit {
     const igss = this.igssEstimado();
     return Number((s + 250.0 - igss).toFixed(2));
   });
+
+  onNitInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const limpio = (input.value || '')
+      .toUpperCase()
+      .replace(/[^0-9\-CFK]/g, '')
+      .substring(0, 12);
+    input.value = limpio;
+    this.form.get('nit')?.setValue(limpio, { emitEvent: false });
+  }
 
   ngOnInit(): void {
     this.cargarCatalogos();
