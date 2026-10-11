@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { ClientesService } from '../../core/services/clientes.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { OnlyNumbersDirective } from '../../shared/directives/only-numbers.directive';
@@ -24,6 +25,7 @@ import { ClienteItem } from '../../core/models/clientes.models';
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     OnlyNumbersDirective,
     OnlyLettersDirective,
   ],
@@ -150,6 +152,25 @@ import { ClienteItem } from '../../core/models/clientes.models';
           </div>
         </div>
 
+        <!-- Municipio y Departamento -->
+        <div>
+          <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">
+            Municipio / Departamento *
+          </label>
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-select formControlName="municipioId" placeholder="Seleccionar municipio">
+              @for (muni of municipios(); track muni.municipioId) {
+                <mat-option [value]="muni.municipioId">
+                  {{ muni.nombreCompleto }}
+                </mat-option>
+              }
+            </mat-select>
+            @if (form.get('municipioId')?.hasError('required') && form.get('municipioId')?.touched) {
+              <mat-error class="text-2xs">Debe seleccionar un municipio</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
         <!-- Dirección de Entrega -->
         <div>
           <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">Dirección de Entrega / Residencia *</label>
@@ -217,6 +238,7 @@ export class ClienteFormModalComponent implements OnInit {
 
   readonly guardando = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly municipios = this.clientesService.municipios;
 
   readonly form: FormGroup = this.fb.group({
     nombre: ['', [Validators.required, CustomValidators.nombrePersona()]],
@@ -225,9 +247,11 @@ export class ClienteFormModalComponent implements OnInit {
     email: ['', [Validators.email]],
     direccion: ['', [Validators.required, Validators.maxLength(300), CustomValidators.textoConLetras()]],
     referenciaDireccion: ['', [CustomValidators.textoConLetras()]],
+    municipioId: [1, [Validators.required]],
   });
 
   ngOnInit(): void {
+    this.clientesService.cargarMunicipios().subscribe();
     if (this.data) {
       this.form.patchValue({
         nombre: this.data.nombre,
@@ -236,6 +260,7 @@ export class ClienteFormModalComponent implements OnInit {
         email: this.data.email || '',
         direccion: this.data.direccion,
         referenciaDireccion: this.data.referenciaDireccion || '',
+        municipioId: this.data.municipioId || 1,
       });
     }
   }
@@ -257,6 +282,7 @@ export class ClienteFormModalComponent implements OnInit {
       email: val.email?.trim() || undefined,
       direccion: val.direccion.trim(),
       referenciaDireccion: val.referenciaDireccion?.trim() || undefined,
+      municipioId: Number(val.municipioId) || 1,
     };
 
     const req$ = this.data

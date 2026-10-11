@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import {
   ClienteItem,
   LaboratorioItem,
+  MunicipioItem,
   FilterClienteParams,
   PaginatedClientesResponse,
   CreateClienteDto,
@@ -21,6 +22,7 @@ export class ClientesService {
   // Signals
   readonly clientes = signal<ClienteItem[]>([]);
   readonly laboratorios = signal<LaboratorioItem[]>([]);
+  readonly municipios = signal<MunicipioItem[]>([]);
   readonly loading = signal<boolean>(false);
   readonly totalItems = signal<number>(0);
   readonly currentPage = signal<number>(1);
@@ -63,6 +65,12 @@ export class ClientesService {
         },
         error: () => this.loading.set(false),
       })
+    );
+  }
+
+  cargarMunicipios(): Observable<MunicipioItem[]> {
+    return this.http.get<MunicipioItem[]>(`${this.apiUrl}/municipios`).pipe(
+      tap((munis) => this.municipios.set(munis || []))
     );
   }
 

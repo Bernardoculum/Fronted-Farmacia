@@ -138,6 +138,7 @@
               <th class="py-3 px-4 text-3xs font-semibold uppercase text-slate-500">PACIENTE / CLIENTE</th>
               <th class="py-3 px-4 text-3xs font-semibold uppercase text-slate-500">TELÉFONO</th>
               <th class="py-3 px-4 text-3xs font-semibold uppercase text-slate-500">CORREO</th>
+              <th class="py-3 px-4 text-3xs font-semibold uppercase text-slate-500">MUNICIPIO</th>
               <th class="py-3 px-4 text-3xs font-semibold uppercase text-slate-500">DIRECCIÓN</th>
               <th class="py-3 px-4 text-center text-3xs font-semibold uppercase text-slate-500">ESTADO</th>
               @if (canManageLaboratorios()) {
@@ -152,6 +153,12 @@
                 <td class="py-3 px-4 font-bold text-slate-900">{{ c.nombreCompleto }}</td>
                 <td class="py-3 px-4 font-bold text-slate-700">{{ c.telefono }}</td>
                 <td class="py-3 px-4 text-slate-500">{{ c.email || 'Sin correo' }}</td>
+                <td class="py-3 px-4 text-slate-700 whitespace-nowrap">
+                  <div class="font-bold text-slate-800">{{ c.municipio || 'N/A' }}</div>
+                  @if (c.departamento) {
+                    <div class="text-3xs text-slate-400 font-medium">{{ c.departamento }}</div>
+                  }
+                </td>
                 <td class="py-3 px-4 text-slate-600 max-w-[250px] truncate" [matTooltip]="c.direccion">{{ c.direccion }}</td>
                 <td class="py-3 px-4 text-center">
                   <span
@@ -186,7 +193,7 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="7" class="py-12 text-center text-slate-400">
+                <td colspan="8" class="py-12 text-center text-slate-400">
                   <mat-icon class="!text-3xl !w-8 !h-8 text-slate-300 mx-auto mb-1">people_outline</mat-icon>
                   <p class="text-xs font-semibold">No se encontraron clientes registrados.</p>
                 </td>

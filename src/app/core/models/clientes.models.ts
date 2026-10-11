@@ -7,10 +7,19 @@ export interface ClienteItem {
   email: string | null;
   direccion: string;
   referenciaDireccion: string | null;
+  municipioId?: number;
   municipio?: string;
   departamento?: string;
   fechaRegistro: string;
   estado: string; // 'ACTIVO' | 'INACTIVO'
+}
+
+export interface MunicipioItem {
+  municipioId: number;
+  nombre: string;
+  departamentoId: number;
+  departamentoNombre: string;
+  nombreCompleto: string;
 }
 
 export interface LaboratorioItem {
