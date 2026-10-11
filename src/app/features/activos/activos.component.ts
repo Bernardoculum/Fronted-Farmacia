@@ -155,9 +155,7 @@ export class ActivosComponent implements OnInit {
     });
     ref.afterClosed().subscribe((res) => {
       if (res) {
-        this.activos.update((lista) =>
-          lista.map((item) => (item.id === res.id ? { ...item, ...res } : item))
-        );
+        this.cargarActivos();
       }
     });
   }
@@ -181,7 +179,7 @@ export class ActivosComponent implements OnInit {
       maxWidth: '95vw',
       disableClose: false,
       hasBackdrop: true,
-      data: { activoId: activo.id },
+      data: { activoId: ((activo as any).activoId || activo.id) },
     });
   }
 
@@ -196,7 +194,7 @@ export class ActivosComponent implements OnInit {
 
     if (!ok) return;
 
-    this.activosService.darDeBaja(activo.id, { motivo: 'Desincorporación por obsolescencia o deterioro' }).subscribe({
+    this.activosService.darDeBaja(((activo as any).activoId || activo.id), { motivo: 'Desincorporación por obsolescencia o deterioro' }).subscribe({
       next: (res) => {
         this.notification.success('Activo Dado de Baja', `El activo "${res.nombre || activo.nombre}" fue desincorporado correctamente.`);
         this.cargarActivos();

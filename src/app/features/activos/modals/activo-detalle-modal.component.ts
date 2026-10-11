@@ -157,7 +157,7 @@ export class ActivoDetalleModalComponent implements OnInit {
   cargando = signal<boolean>(true);
 
   ngOnInit(): void {
-    this.activosService.getActivoById(this.data.activoId).subscribe({
+    this.activosService.getActivoById(this.data?.activoId || (this.data as any)?.id).subscribe({
       next: (res) => {
         this.activo.set(res);
         this.cargando.set(false);

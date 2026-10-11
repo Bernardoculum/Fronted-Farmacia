@@ -274,17 +274,17 @@ export class ActivoFormModalComponent implements OnInit {
   ngOnInit(): void {
     this.cargarCatalogos();
     if (this.data?.activo) {
-      const a = this.data.activo;
+      const a = this.data.activo as any;
       this.form.patchValue({
-        nombre: a.nombre,
-        codigoActivo: a.codigoActivo,
-        categoriaActivoId: a.categoriaActivoId || a.categoriaActivo?.id,
+        nombre: a.nombre || a.descripcion || '',
+        codigoActivo: a.codigoActivo || '',
+        categoriaActivoId: a.categoriaActivoId || a.categoriaId || a.categoriaActivo?.id,
         sucursalId: a.sucursalId || a.sucursal?.id,
         marca: a.marca || '',
         modelo: a.modelo || '',
         numeroSerie: a.numeroSerie || '',
-        fechaAdquisicion: a.fechaAdquisicion ? a.fechaAdquisicion.substring(0, 10) : '',
-        costoAdquisicion: a.costoAdquisicion,
+        fechaAdquisicion: a.fechaAdquisicion ? (typeof a.fechaAdquisicion === 'string' ? a.fechaAdquisicion.substring(0, 10) : new Date(a.fechaAdquisicion).toISOString().substring(0, 10)) : '',
+        costoAdquisicion: a.costoAdquisicion ?? a.valorAdquisicion ?? null,
         responsableAsignado: a.responsableAsignado || '',
         observaciones: a.observaciones || '',
       });
@@ -327,18 +327,19 @@ export class ActivoFormModalComponent implements OnInit {
       observaciones: val.observaciones?.trim() || undefined,
     };
 
-    const request$ = this.data?.activo
-      ? this.activosService.actualizarActivo(this.data.activo.id, dto)
+    const id = (this.data?.activo as any)?.activoId || (this.data?.activo as any)?.id;
+    const request$ = id
+      ? this.activosService.actualizarActivo(Number(id), dto)
       : this.activosService.crearActivo(dto);
 
     request$.subscribe({
-      next: (activoGuardado: ActivoFijo) => {
+      next: (activoGuardado: any) => {
         this.guardando.set(false);
+        this.dialogRef.close(activoGuardado);
         this.notification.success(
           this.data?.activo ? 'Activo Actualizado' : 'Activo Registrado',
           `"${val.nombre}" ha sido guardado exitosamente.`
         );
-        this.dialogRef.close(activoGuardado);
       },
       error: (err: any) => {
         this.guardando.set(false);
