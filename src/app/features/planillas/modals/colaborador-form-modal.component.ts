@@ -546,8 +546,10 @@ export class ColaboradorFormModalComponent implements OnInit {
   }
 
   guardar(): void {
+    this.errorMessage.set(null);
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.errorMessage.set('Por favor completa todos los campos requeridos correctamente.');
       return;
     }
 
@@ -587,7 +589,7 @@ export class ColaboradorFormModalComponent implements OnInit {
       },
       error: (err) => {
         this.guardando.set(false);
-        this.notification.error('Error al guardar', err?.error?.message || 'Fallo en el registro del colaborador.');
+        this.errorMessage.set(err?.error?.message || 'Fallo en el registro del colaborador.');
       },
     });
   }

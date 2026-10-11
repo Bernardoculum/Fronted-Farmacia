@@ -202,6 +202,7 @@ export class SucursalFormModalComponent implements OnInit {
 
   readonly isEditing: boolean;
   guardando = false;
+  errorMessage: string | null = null;
 
   readonly form = this.fb.group({
     nombre: ['', [Validators.required, Validators.maxLength(150), CustomValidators.textoConLetras()]],
@@ -232,6 +233,7 @@ export class SucursalFormModalComponent implements OnInit {
   }
 
   guardar(): void {
+    this.errorMessage = null;
     if (this.form.invalid) return;
 
     this.guardando = true;
@@ -259,7 +261,7 @@ export class SucursalFormModalComponent implements OnInit {
       },
       error: (err) => {
         this.guardando = false;
-        this.notification.error(err?.error?.message || 'Error al guardar sucursal');
+        this.errorMessage = err?.error?.message || 'Error al guardar sucursal';
       },
     });
   }

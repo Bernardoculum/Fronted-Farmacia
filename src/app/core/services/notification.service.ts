@@ -8,6 +8,8 @@ export class NotificationService {
   private getBaseConfig(): SweetAlertOptions {
     return {
       heightAuto: false,
+      focusConfirm: false,
+      returnFocus: false,
       customClass: {
         container: '!z-[9999999]',
         popup: 'rounded-3xl p-6 font-sans shadow-2xl border border-slate-100 !z-[10000000]',

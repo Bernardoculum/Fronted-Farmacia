@@ -158,6 +158,7 @@ export class GenerarPlanillaModalComponent implements OnInit {
   private readonly notification = inject(NotificationService);
 
   readonly guardando = signal<boolean>(false);
+  readonly errorMessage = signal<string | null>(null);
   readonly sucursales = signal<SucursalOption[]>([]);
 
   readonly form: FormGroup = this.fb.group({
@@ -247,7 +248,7 @@ export class GenerarPlanillaModalComponent implements OnInit {
         },
         error: (err: any) => {
           this.guardando.set(false);
-          this.notification.error('Error al generar planilla', err?.error?.message || 'Error en el cálculo');
+          this.errorMessage.set(err?.error?.message || 'Error en el cálculo');
         },
       });
   }

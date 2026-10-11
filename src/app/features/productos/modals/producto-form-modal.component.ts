@@ -370,7 +370,6 @@ export class ProductoFormModalComponent {
         this.saving.set(false);
         const msg = err.error?.message || 'Error al guardar los datos del medicamento.';
         this.errorMessage.set(msg);
-        this.notification.error('Error al guardar', msg);
       },
     });
   }
