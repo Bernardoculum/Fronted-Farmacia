@@ -310,15 +310,18 @@ export class ActivoFormModalComponent implements OnInit {
     this.guardando.set(true);
     const val = this.form.value;
 
-    const dto = {
+    const codActivo = val.codigoActivo?.trim() || ('ACT-' + Date.now().toString().slice(-6));
+    const dto: any = {
+      codigoActivo: codActivo,
+      descripcion: val.nombre.trim(),
       nombre: val.nombre.trim(),
-      codigoActivo: val.codigoActivo?.trim() || undefined,
       categoriaActivoId: Number(val.categoriaActivoId),
       sucursalId: Number(val.sucursalId),
       marca: val.marca?.trim() || undefined,
       modelo: val.modelo?.trim() || undefined,
       numeroSerie: val.numeroSerie?.trim() || undefined,
       fechaAdquisicion: val.fechaAdquisicion,
+      valorAdquisicion: Number(val.costoAdquisicion),
       costoAdquisicion: Number(val.costoAdquisicion),
       responsableAsignado: val.responsableAsignado?.trim() || undefined,
       observaciones: val.observaciones?.trim() || undefined,

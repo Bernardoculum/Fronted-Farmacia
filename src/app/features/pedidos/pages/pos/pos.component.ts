@@ -92,8 +92,9 @@ export class PosComponent {
     this.cajasService.getSesionActiva(id).subscribe({
       next: (res) => {
         this.cargandoSesion.set(false);
-        if (res && res.activa && res.sesion) {
-          this.sesionCajaActiva.set(res.sesion);
+        const sesion = (res && res.activa && res.sesion) ? res.sesion : (res?.sesionCajaId ? res : null);
+        if (sesion) {
+          this.sesionCajaActiva.set(sesion);
         } else {
           this.sesionCajaActiva.set(null);
         }

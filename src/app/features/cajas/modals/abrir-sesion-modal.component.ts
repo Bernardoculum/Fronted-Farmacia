@@ -8,8 +8,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { CajasService } from '../../../core/services/cajas.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { PlanillasService } from '../../../core/services/planillas.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { CajaItem } from '../../../core/models/cajas.models';
+import { EmpleadoItem } from '../../../core/models/planillas.models';
 import { CustomValidators } from '../../../shared/validators/custom-validators';
 import { OnlyNumbersDirective } from '../../../shared/directives/only-numbers.directive';
 
@@ -40,7 +43,7 @@ import { OnlyNumbersDirective } from '../../../shared/directives/only-numbers.di
               Control de Turnos
             </span>
             <h3 class="text-base sm:text-lg font-black text-slate-800 mt-0.5">Apertura de Turno de Caja</h3>
-            <p class="text-xs text-slate-500">Asigna la terminal física (caja registradora) y el fondo inicial</p>
+            <p class="text-xs text-slate-500">Asigna la terminal física, el cajero responsable y el fondo inicial</p>
           </div>
         </div>
         <button
@@ -101,6 +104,27 @@ import { OnlyNumbersDirective } from '../../../shared/directives/only-numbers.di
             }
           }
         </div>
+
+        <!-- Cajero Responsable (Visible para Gerente y Super Admin) -->
+        @if (puedeAsignarCajero()) {
+          <div>
+            <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">
+              Cajero Responsable del Turno *
+            </label>
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-select formControlName="empleadoId" placeholder="Selecciona el cajero responsable...">
+                @for (emp of empleados(); track emp.empleadoId) {
+                  <mat-option [value]="emp.empleadoId">
+                    {{ emp.nombreCompleto || (emp.nombre + ' ' + emp.apellido) }} ({{ emp.puesto || 'Empleado' }})
+                  </mat-option>
+                }
+              </mat-select>
+              @if (form.get('empleadoId')?.hasError('required') && form.get('empleadoId')?.touched) {
+                <mat-error class="text-2xs">Debe asignar el cajero responsable</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        }
 
         <!-- Saldo Inicial -->
         <div>
@@ -179,6 +203,8 @@ export class AbrirSesionModalComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly dialogRef = inject(MatDialogRef<AbrirSesionModalComponent>);
   private readonly cajasService = inject(CajasService);
+  readonly authService = inject(AuthService);
+  private readonly planillasService = inject(PlanillasService);
   private readonly notification = inject(NotificationService);
 
   readonly cargandoCajas = signal<boolean>(true);
@@ -186,13 +212,36 @@ export class AbrirSesionModalComponent implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly totalCajasRegistradas = signal<number>(0);
   readonly cajasDisponibles = signal<CajaItem[]>([]);
+  readonly empleados = signal<EmpleadoItem[]>([]);
+
+  readonly puedeAsignarCajero = signal<boolean>(
+    this.authService.isSuperAdmin() || this.authService.isGerente()
+  );
 
   readonly form: FormGroup = this.fb.group({
     cajaId: [null, [Validators.required]],
+    empleadoId: [this.authService.currentUser()?.empleadoId || null],
     saldoInicial: [500, [Validators.required, CustomValidators.montoPositivo()]],
   });
 
   ngOnInit(): void {
+    if (this.puedeAsignarCajero()) {
+      this.form.get('empleadoId')?.setValidators([Validators.required]);
+      this.form.get('empleadoId')?.updateValueAndValidity();
+
+      this.planillasService.cargarEmpleados().subscribe({
+        next: (emps) => {
+          const activos = (emps || []).filter((e) => e.estado === 'ACTIVO');
+          this.empleados.set(activos);
+          // Si no hay empleado seleccionado, sugerir cajero o el usuario actual
+          if (!this.form.get('empleadoId')?.value && activos.length > 0) {
+            const cajero = activos.find((e) => e.puesto?.toLowerCase().includes('cajer')) || activos[0];
+            this.form.patchValue({ empleadoId: cajero.empleadoId });
+          }
+        },
+      });
+    }
+
     this.cajasService.cargarCajas().subscribe({
       next: (cajas) => {
         const todas = cajas || [];
@@ -222,14 +271,22 @@ export class AbrirSesionModalComponent implements OnInit {
     this.errorMessage.set(null);
 
     const val = this.form.value;
-    this.cajasService.abrirSesion({ cajaId: val.cajaId, saldoInicial: Number(val.saldoInicial) }).subscribe({
+    const dto: any = {
+      cajaId: val.cajaId,
+      saldoInicial: Number(val.saldoInicial),
+    };
+    if (val.empleadoId) {
+      dto.empleadoId = Number(val.empleadoId);
+    }
+
+    this.cajasService.abrirSesion(dto).subscribe({
       next: (res: any) => {
         this.guardando.set(false);
         this.dialogRef.close(true);
         setTimeout(() => {
           this.notification.success(
             'Turno de Caja Abierto',
-            `Sesión iniciada con éxito en ${res.caja} con fondo de Q ${Number(res.saldoInicial).toFixed(2)}.`
+            `Sesión iniciada con éxito en ${res.caja} (${res.cajero || 'Cajero'}) con fondo de Q ${Number(res.saldoInicial).toFixed(2)}.`
           );
         }, 80);
       },
