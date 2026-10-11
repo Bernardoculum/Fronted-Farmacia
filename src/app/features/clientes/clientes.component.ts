@@ -61,6 +61,7 @@ export class ClientesComponent implements OnInit {
       } else {
         this.cargarDatos();
         this.clientesService.cargarLaboratorios().subscribe();
+        this.clientesService.cargarMunicipios().subscribe();
       }
     });
   }

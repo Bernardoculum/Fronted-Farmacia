@@ -1,5 +1,6 @@
 export interface CategoriaActivo {
   id: number;
+  categoriaActivoId?: number;
   codigo: string;
   nombre: string;
   porcentajeDepreciacionAnual: number;
