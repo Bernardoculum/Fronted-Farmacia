@@ -6,9 +6,7 @@ import Swal, { SweetAlertOptions } from 'sweetalert2';
 })
 export class NotificationService {
   private getBaseConfig(): SweetAlertOptions {
-    const overlay = typeof document !== 'undefined' ? (document.querySelector('.cdk-overlay-container') as HTMLElement) : null;
     return {
-      target: overlay || 'body',
       heightAuto: false,
       customClass: {
         container: '!z-[9999999]',

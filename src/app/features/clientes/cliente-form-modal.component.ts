@@ -60,6 +60,12 @@ import { ClienteItem } from '../../core/models/clientes.models';
 
       <!-- Formulario con CSS Grid 2 Columnas -->
       <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-3">
+        @if (errorMessage()) {
+          <div class="p-3 bg-rose-50 text-rose-700 text-xs rounded-xl border border-rose-200 flex items-center gap-2">
+            <mat-icon class="text-rose-500 text-base shrink-0">error_outline</mat-icon>
+            <span class="font-medium">{{ errorMessage() }}</span>
+          </div>
+        }
         
         <!-- Nombres y Apellidos en Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -210,6 +216,7 @@ export class ClienteFormModalComponent implements OnInit {
   data: ClienteItem | null = inject(MAT_DIALOG_DATA, { optional: true });
 
   readonly guardando = signal<boolean>(false);
+  readonly errorMessage = signal<string | null>(null);
 
   readonly form: FormGroup = this.fb.group({
     nombre: ['', [Validators.required, CustomValidators.nombrePersona()]],
@@ -234,6 +241,7 @@ export class ClienteFormModalComponent implements OnInit {
   }
 
   guardar(): void {
+    this.errorMessage.set(null);
     if (this.form.invalid || this.guardando()) {
       this.form.markAllAsTouched();
       return;
@@ -266,7 +274,7 @@ export class ClienteFormModalComponent implements OnInit {
       },
       error: (err) => {
         this.guardando.set(false);
-        this.notification.error('Error al guardar', err?.error?.message || 'No se pudo procesar la solicitud.');
+        this.errorMessage.set(err?.error?.message || 'No se pudo procesar la solicitud. Verifique los datos.');
       },
     });
   }

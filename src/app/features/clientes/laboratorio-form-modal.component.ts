@@ -53,6 +53,12 @@ import { OnlyNumbersDirective } from '../../shared/directives/only-numbers.direc
       </div>
 
       <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-3">
+        @if (errorMessage()) {
+          <div class="p-3 bg-rose-50 text-rose-700 text-xs rounded-xl border border-rose-200 flex items-center gap-2">
+            <mat-icon class="text-rose-500 text-base shrink-0">error_outline</mat-icon>
+            <span class="font-medium">{{ errorMessage() }}</span>
+          </div>
+        }
         <div>
           <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">Nombre del Laboratorio *</label>
           <mat-form-field appearance="outline" class="w-full">
@@ -119,6 +125,7 @@ export class LaboratorioFormModalComponent implements OnInit {
   data = inject(MAT_DIALOG_DATA, { optional: true });
 
   readonly guardando = signal<boolean>(false);
+  readonly errorMessage = signal<string | null>(null);
   laboratorioActual: LaboratorioItem | null = null;
 
   readonly form: FormGroup = this.fb.group({
@@ -139,6 +146,7 @@ export class LaboratorioFormModalComponent implements OnInit {
   }
 
   guardar(): void {
+    this.errorMessage.set(null);
     if (this.form.invalid || this.guardando()) {
       this.form.markAllAsTouched();
       return;
@@ -167,7 +175,7 @@ export class LaboratorioFormModalComponent implements OnInit {
       },
       error: (err) => {
         this.guardando.set(false);
-        this.notification.error('Error al guardar', err?.error?.message || 'No se pudo procesar el laboratorio.');
+        this.errorMessage.set(err?.error?.message || 'No se pudo procesar el laboratorio.');
       },
     });
   }
