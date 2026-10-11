@@ -59,6 +59,12 @@ import { OnlyNumbersDirective } from '../../../shared/directives/only-numbers.di
       </div>
 
       <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-3">
+        @if (errorMessage()) {
+          <div class="p-3 bg-rose-50 text-rose-700 text-xs rounded-xl border border-rose-200 flex items-center gap-2">
+            <mat-icon class="text-rose-500 text-base shrink-0">error_outline</mat-icon>
+            <span class="font-medium">{{ errorMessage() }}</span>
+          </div>
+        }
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">Nombre / Denominación *</label>
@@ -249,6 +255,7 @@ export class ActivoFormModalComponent implements OnInit {
   categorias = signal<CategoriaActivo[]>([]);
   sucursales = signal<SucursalOption[]>([]);
   guardando = signal<boolean>(false);
+  readonly errorMessage = signal<string | null>(null);
 
   form: FormGroup = this.fb.group({
     nombre: ['', [Validators.required, CustomValidators.textoConLetras()]],
@@ -293,8 +300,10 @@ export class ActivoFormModalComponent implements OnInit {
   }
 
   guardar(): void {
+    this.errorMessage.set(null);
     if (this.form.invalid || this.guardando()) {
       this.form.markAllAsTouched();
+      this.errorMessage.set('Por favor completa los campos obligatorios requeridos.');
       return;
     }
 
@@ -330,7 +339,7 @@ export class ActivoFormModalComponent implements OnInit {
       },
       error: (err: any) => {
         this.guardando.set(false);
-        this.notification.error('Error al guardar activo', err?.error?.message || 'Error en el servidor');
+        this.errorMessage.set(err?.error?.message || 'Error al guardar el activo.');
       },
     });
   }

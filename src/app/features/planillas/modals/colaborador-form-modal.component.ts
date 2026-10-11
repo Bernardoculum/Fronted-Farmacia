@@ -80,6 +80,13 @@ import { SucursalOption } from '../../../core/models/sucursal.models';
       <!-- Formulario Organizado por Secciones Temáticas -->
       <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4">
         
+        @if (errorMessage()) {
+          <div class="p-3 bg-rose-50 text-rose-700 text-xs rounded-xl border border-rose-200 flex items-center gap-2">
+            <mat-icon class="text-rose-500 text-base shrink-0">error_outline</mat-icon>
+            <span class="font-medium">{{ errorMessage() }}</span>
+          </div>
+        }
+        
         <!-- SECCIÓN 1: INFORMACIÓN PERSONAL Y CONTACTO -->
         <div class="space-y-3 pb-3 border-b border-slate-100">
           <div class="flex items-center gap-1.5 pb-1 border-b border-slate-100">
@@ -449,6 +456,7 @@ export class ColaboradorFormModalComponent implements OnInit {
   private notification = inject(NotificationService);
 
   readonly guardando = signal<boolean>(false);
+  readonly errorMessage = signal<string | null>(null);
   readonly puestos = signal<PuestoItem[]>([]);
   readonly sucursales = signal<SucursalOption[]>([]);
   empleadoActual: EmpleadoItem | null = null;
