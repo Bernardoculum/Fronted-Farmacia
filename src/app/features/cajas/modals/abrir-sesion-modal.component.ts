@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+﻿import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
@@ -40,7 +40,7 @@ import { OnlyNumbersDirective } from '../../../shared/directives/only-numbers.di
               Control de Turnos
             </span>
             <h3 class="text-base sm:text-lg font-black text-slate-800 mt-0.5">Apertura de Turno de Caja</h3>
-            <p class="text-xs text-slate-500">Asigna la terminal física y el fondo de sencillo inicial</p>
+            <p class="text-xs text-slate-500">Asigna la terminal física (caja registradora) y el fondo inicial</p>
           </div>
         </div>
         <button
@@ -53,13 +53,28 @@ import { OnlyNumbersDirective } from '../../../shared/directives/only-numbers.di
         </button>
       </div>
 
+      <!-- Banner de Error Inline (Sin modales de SweetAlert superpuestos) -->
+      @if (errorMessage()) {
+        <div class="p-3 mb-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between animate-fadeIn">
+          <div class="flex items-center gap-2">
+            <mat-icon class="!text-base !w-4 !h-4 text-rose-500">error_outline</mat-icon>
+            <span class="font-medium">{{ errorMessage() }}</span>
+          </div>
+          <button type="button" (click)="errorMessage.set(null)" class="text-rose-400 hover:text-rose-600">
+            <mat-icon class="!text-sm !w-3.5 !h-3.5">close</mat-icon>
+          </button>
+        </div>
+      }
+
       <!-- Formulario -->
       <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-3">
         <!-- Terminal de Caja -->
         <div>
-          <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">Terminal / Caja Física *</label>
+          <label class="block text-2xs font-bold text-slate-600 uppercase mb-1">
+            Terminal / Caja Física *
+          </label>
           <mat-form-field appearance="outline" class="w-full">
-            <mat-select formControlName="cajaId" placeholder="Selecciona una caja...">
+            <mat-select formControlName="cajaId" placeholder="Selecciona una terminal de caja...">
               @for (c of cajasDisponibles(); track c.cajaId) {
                 <mat-option [value]="c.cajaId">
                   {{ c.codigoCaja }} - {{ c.sucursal }} ({{ c.descripcion || 'General' }})
@@ -70,11 +85,20 @@ import { OnlyNumbersDirective } from '../../../shared/directives/only-numbers.di
               <mat-error class="text-2xs">Debe seleccionar una caja</mat-error>
             }
           </mat-form-field>
-          @if (cajasDisponibles().length === 0 && !cargandoCajas()) {
-            <p class="text-xs text-amber-600 font-medium flex items-center gap-1 -mt-2 mb-2">
-              <mat-icon class="!text-xs !w-3 !h-3">warning</mat-icon>
-              Todas las cajas activas tienen turnos abiertos actualmente.
-            </p>
+
+          <!-- Estados informativos si no hay cajas -->
+          @if (!cargandoCajas()) {
+            @if (totalCajasRegistradas() === 0) {
+              <div class="p-2.5 rounded-lg bg-amber-50 border border-amber-200 -mt-2 mb-2 text-xs text-amber-800 flex items-start gap-2">
+                <mat-icon class="!text-sm !w-4 !h-4 text-amber-600 shrink-0 mt-0.5">warning</mat-icon>
+                <span>No hay terminales de cobro registradas para esta sucursal. Contacta a un administrador.</span>
+              </div>
+            } @else if (cajasDisponibles().length === 0) {
+              <div class="p-2.5 rounded-lg bg-sky-50 border border-sky-200 -mt-2 mb-2 text-xs text-sky-800 flex items-start gap-2">
+                <mat-icon class="!text-sm !w-4 !h-4 text-sky-600 shrink-0 mt-0.5">info</mat-icon>
+                <span>Todas las terminales activas de esta sucursal tienen turnos abiertos actualmente.</span>
+              </div>
+            }
           }
         </div>
 
@@ -140,7 +164,7 @@ import { OnlyNumbersDirective } from '../../../shared/directives/only-numbers.di
             type="submit"
             mat-flat-button
             color="primary"
-            [disabled]="form.invalid || guardando()"
+            [disabled]="form.invalid || guardando() || cajasDisponibles().length === 0"
             class="!rounded-xl !bg-teal-600 !text-white !font-bold !px-5"
           >
             <mat-icon class="!text-sm !w-4 !h-4 mr-1">lock_open</mat-icon>
@@ -159,6 +183,8 @@ export class AbrirSesionModalComponent implements OnInit {
 
   readonly cargandoCajas = signal<boolean>(true);
   readonly guardando = signal<boolean>(false);
+  readonly errorMessage = signal<string | null>(null);
+  readonly totalCajasRegistradas = signal<number>(0);
   readonly cajasDisponibles = signal<CajaItem[]>([]);
 
   readonly form: FormGroup = this.fb.group({
@@ -169,7 +195,10 @@ export class AbrirSesionModalComponent implements OnInit {
   ngOnInit(): void {
     this.cajasService.cargarCajas().subscribe({
       next: (cajas) => {
-        const disponibles = (cajas || []).filter((c) => c.estado === 'ACTIVA' && !c.estaEnUso);
+        const todas = cajas || [];
+        this.totalCajasRegistradas.set(todas.length);
+
+        const disponibles = todas.filter((c) => c.estado === 'ACTIVA' && !c.estaEnUso);
         this.cajasDisponibles.set(disponibles);
         if (disponibles.length > 0) {
           this.form.patchValue({ cajaId: disponibles[0].cajaId });
@@ -190,6 +219,7 @@ export class AbrirSesionModalComponent implements OnInit {
       return;
     }
     this.guardando.set(true);
+    this.errorMessage.set(null);
 
     const val = this.form.value;
     this.cajasService.abrirSesion({ cajaId: val.cajaId, saldoInicial: Number(val.saldoInicial) }).subscribe({
@@ -204,7 +234,7 @@ export class AbrirSesionModalComponent implements OnInit {
         }, 80);
       },
       error: (err: any) => {
-        this.notification.error('Error al abrir turno', err?.error?.message || 'No se pudo abrir la sesión');
+        this.errorMessage.set(err?.error?.message || 'No se pudo abrir el turno de caja');
         this.guardando.set(false);
       },
     });
